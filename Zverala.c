@@ -1,3 +1,4 @@
+// Always compile with `gcc Zverala.c -lm'
 #include<math.h>
 #include<stdlib.h>
 #include<stdio.h>
@@ -68,23 +69,33 @@ int calculate_a() {
     return this_doubleyear % 9 + 1;
 }
 
+int convert_int_arr_to_int(int* array, int array_length) {
+    int result = 0;
+    for (int i = array_length - 1; i >= 0; i--) {
+        result += ((int) pow(10.0, i)) * array[array_length - i - 1];
+        //printf("result: %d\n", result);
+    }
+    printf("int from array: %d\n", result);
+    return result;
+}
+
 int calculate_b() {
     // Sub-calculation 1
     // (-1; +1)
-    int fist_sub_calc[year_number_length];
+    int first_sub_calc[year_number_length];
     for (int i = 0; i < year_number_length; i++) {
         if (i % 2 == 1) {
             int help = *(digits + i) + 1;
             if (help >= 10) {
                 help = 1;
             }
-            fist_sub_calc[i] = help;
+            first_sub_calc[i] = help;
         } else {
             int help = *(digits + i) - 1;
             if (help <= 0) {
                 help = 9;
             }
-            fist_sub_calc[i] = help;
+            first_sub_calc[i] = help;
         }
     }
 
@@ -109,10 +120,23 @@ int calculate_b() {
 
     printf("(-1;+1); (+1; -1):\n");
     for (int i = 0; i < year_number_length; i++) {
-        printf("first: [%d]; second: [%d]\n", fist_sub_calc[i], second_sub_calc[i]);
+        printf("first: [%d]; second: [%d]\n", first_sub_calc[i], second_sub_calc[i]);
     }
 
+    int first_sub_num = convert_int_arr_to_int(first_sub_calc, year_number_length);
+    int second_sub_num = convert_int_arr_to_int(second_sub_calc, year_number_length);
 
+    // Sub-calculation 3
+    double third_sub_num;
+    if (outward) {
+        third_sub_num = (double) first_sub_num / second_sub_num;
+    } else {
+        third_sub_num = (double) second_sub_num / first_sub_num;
+    }
+    printf("third: [%lf]\n", third_sub_num);
+
+    int* sub_result = convert_double(third_sub_num);
+    // TODO Add digits together.
     return 0;
 }
 
