@@ -69,9 +69,50 @@ int calculate_a() {
 }
 
 int calculate_b() {
-    // Sum-calculation 1
+    // Sub-calculation 1
     // (-1; +1)
-    
+    int fist_sub_calc[year_number_length];
+    for (int i = 0; i < year_number_length; i++) {
+        if (i % 2 == 1) {
+            int help = *(digits + i) + 1;
+            if (help >= 10) {
+                help = 1;
+            }
+            fist_sub_calc[i] = help;
+        } else {
+            int help = *(digits + i) - 1;
+            if (help <= 0) {
+                help = 9;
+            }
+            fist_sub_calc[i] = help;
+        }
+    }
+
+    // Sub-calculation 2
+    // (+1; -1)
+    int second_sub_calc[year_number_length];
+    for (int i = 0; i < year_number_length; i++) {
+        if (i % 2 == 1) {
+            int help = *(digits + i) - 1;
+            if (help <= 0) {
+                help = 9;
+            }
+            second_sub_calc[i] = help;
+        } else {
+            int help = *(digits + i) + 1;
+            if (help >= 10) {
+                help = 1;
+            }
+            second_sub_calc[i] = help;
+        }
+    }
+
+    printf("(-1;+1); (+1; -1):\n");
+    for (int i = 0; i < year_number_length; i++) {
+        printf("first: [%d]; second: [%d]\n", fist_sub_calc[i], second_sub_calc[i]);
+    }
+
+
     return 0;
 }
 
@@ -110,26 +151,27 @@ int main(int argc, char const *argv[])
 {
     convert_year(); // Sets global variables.
     fill_in_digits(); // Split year into digits and store them globaly
-    /* int a = calculate_a();
+    int a = calculate_a();
     int b = calculate_b();
-    int c = calculate_c();
+    /* int c = calculate_c();
     bool dragons = dragons_is_present(); */
     
-    printf("stuff\n");
+    printf("year_number_length: %d\n", year_number_length);
     for (int i = 0; i < year_number_length; i++) { // Test fill_in_digits
         printf("[%d]\n", *(digits + i));// * sizeof(int)));
     }
-    printf("Next:\n");
+    printf("Next: test convert_int\n");
 
-    int a = 72346; // Test convert_int
-    int* ar = convert_int(a);
+    int a_test = 72346; // Test convert_int
+    int* ar = convert_int(a_test);
     for (int i = 0; i < 5; i++) {
         printf("[%d]\n", *(ar + i));//*sizeof(int)));
     }
 
-    double b = 2.45639; // Test for convert_double
+    printf("Next: test convert_double\n");
+    double b_test = 2.45639; // Test for convert_double
     int decimal = 10000;
-    int* c_ar = convert_double(b, decimal);
+    int* c_ar = convert_double(b_test, decimal);
     for (int i = 0; i < 5; i++) {
         printf("[%d]\n", *(c_ar + i));
     }
