@@ -135,7 +135,7 @@ int calculate_b() {
     }
     printf("third: [%lf]\n", third_sub_num);
 
-    int* sub_result = convert_double(third_sub_num);
+    int* sub_result = convert_double(third_sub_num, 4); // 4 is the decimal point count for years.
     // TODO Add digits together.
     return 0;
 }
