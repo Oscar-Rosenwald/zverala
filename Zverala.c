@@ -9,6 +9,11 @@ char direction;
 int outward; //
 int* digits;
 int year_number_length;
+int *sins;
+int *cosins;
+long double *help_trigonometry;
+const int ROOT_SIZE = 30;
+int *intersections;
 
 typedef enum {
     January,
@@ -198,15 +203,16 @@ int convert_int_arr_to_int(int* array, int array_length) {
 int add_array_integers(int* array, int array_length) {
     int result = 0;
     for (int i = 0; i < array_length; i++) {
+        printf("array to add: %d\n", array[i]);
         result += array[i];
     }
+    printf("adding array: %d\n", result);
     if (result >= 10) {
         int* new_operation = convert_int(result);
         int length = count_number_length(result);
         result = add_array_integers(new_operation, length);
         free(new_operation);
     }
-    printf("adding array: %d\n", result);
     return result;
 }
 
@@ -266,16 +272,15 @@ int calculate_b() {
     }
     printf("third: %lf\n", third_sub_num);
 
-    int number_after_decimal = 4;
+    int number_after_decimal = year_number_length;
     int sub_result_added;
 
     int* sub_result = convert_double(third_sub_num, number_after_decimal); // 4 is the decimal point count for years.
-    // TODO Add digits together.
     // Check the length of the number
     if (third_sub_num < 1) { // Length of number -> 4
-        sub_result_added = add_array_integers(sub_result, 4);
+        sub_result_added = add_array_integers(sub_result, number_after_decimal);
     } else { // Length of number -> 5
-        sub_result_added = add_array_integers(sub_result, 5);
+        sub_result_added = add_array_integers(sub_result, number_after_decimal + 1);
     } // Never exeeds five.
     printf("b: %d\n", sub_result_added);
     free(sub_result);
@@ -426,6 +431,79 @@ void convert_year_globally() {
 
 void free_memory() {
     free(digits);
+    free(sins);
+    free(cosins);
+    free(help_trigonometry);
+    free(intersections);
+}
+
+void get_sins(int a) {
+    for (int k = 0; k < ROOT_SIZE; k++) {
+        *(help_trigonometry + k - 1) = (long double) sqrt((M_PI *  k)/a);
+    }
+}
+
+long double calculate_period (int k, int b) {
+    return (M_PI * k) / (2*b);
+}
+
+void get_cosins(int b, int c) {
+    long double root;
+    int parameter_bound = -1;
+    do {
+        parameter_bound += 2;
+        root = calculate_period(parameter_bound, b);
+        printf("root = %Lf; k = %d\n", root, parameter_bound);
+    } while (root < 1);
+    parameter_bound -= 2; // After the last check, parameter_bound will be 2 too big.
+
+    int how_many_roots = (parameter_bound / 2 + 1);
+    long double sub_results[how_many_roots][2];
+    // OBSOLITE 2 for k (one for PI - result); one for -k (not two - x would be negative, unless PI - (- k))
+
+    for (int i = 0; i < how_many_roots; i++) {
+        int parameter = i * 2 + 1; // Get the odd number
+        printf("period_max = %d; i = %d\nparameter = %d\n", parameter_bound, i, parameter);
+        root = calculate_period(parameter, b);
+        long double argsin = asinl(root);
+        long double res1 = argsin / c;
+        long double res2 = (M_PI - argsin) / c;
+        //root = calculate_period(-parameter, b);
+        //argsin = asinl(root);
+        //long double res3 = (M_PI - argsin) / c;
+        sub_results[i][0] = res1;
+        sub_results[i][1] = res2;
+        //sub_results[i][2] = res3;
+        printf("cosin: [%Lf]\ncosin: [%Lf]\n", sub_results[i][0], sub_results[i][1]);
+    }
+
+    printf("ROOT_SIZE / (2 * how_many_roots) = %d\n", ROOT_SIZE / (2 * how_many_roots));
+    
+    int repeat = ROOT_SIZE / (2 * how_many_roots);
+    for (int period = 0; period < repeat; period++) {
+        for (int j = 0; j < how_many_roots; j++) {
+            int offset = period * how_many_roots * 2;
+            *(help_trigonometry + offset + j) = sub_results[j][0] + (period * (M_PI / c));
+            *(help_trigonometry + offset + how_many_roots * 2 - j - 1) = sub_results[j][1] + (period * (M_PI / c));
+            printf("%d  b: [%Lf]\n   b: [%Lf]\n", period, help_trigonometry[offset + j], help_trigonometry[offset + how_many_roots * 2 - j - 1]);
+        }
+    }
+}
+
+void expand_double_to_int_array (int *array_to, long double *array_from, int array_length) {
+    for (int i = 0; i < array_length; i++) {
+        int decimal;
+        if (*(array_from + i) >= 1) {
+            decimal = 5;
+        } else if (array_from[i] < 0.1) {
+            decimal = 3;
+        } else {
+            decimal = 4;
+        }
+        int * converted = convert_double(*(array_from + i), 4);
+        *(array_to + i) = convert_int_arr_to_int(converted, decimal);
+        free(converted);
+    }
 }
 
 int main(int argc, char const *argv[])
@@ -433,10 +511,49 @@ int main(int argc, char const *argv[])
     convert_year_globally(); // Sets global variables.
     printf("Global - this doubleyear: %d\n", this_doubleyear);
     fill_in_digits(); // Split year into digits and store them globaly
+    
     int a = calculate_a();
     int b = calculate_b();
     int c = calculate_c();
     int dragons = there_be_dragons();
+
+    sins = malloc(ROOT_SIZE*sizeof(long double));
+    cosins = malloc(ROOT_SIZE*sizeof(long double));
+    help_trigonometry = malloc(ROOT_SIZE*sizeof(long double));
+
+    get_sins(a);
+    expand_double_to_int_array(sins, help_trigonometry, ROOT_SIZE);
+    for (int i = 0; i < ROOT_SIZE; i++) {
+        printf("sin %d: %d\n", i, *(sins + i));
+    }
+
+    get_cosins(b, c);
+    expand_double_to_int_array(cosins, help_trigonometry, ROOT_SIZE);
+    for (int i = 0; i < ROOT_SIZE; i++) {
+        printf("sin %d: %d\n", i, *(sins + i));
+    }
+    for (int i = 0; i < ROOT_SIZE; i++) {
+        printf("cosin %d: %d\n", i, *(cosins + i));
+    }
+
+    int intersection_count = 34;
+    intersections = malloc(intersection_count*sizeof(int));
+    *intersections = 0;
+    // Get 34 results - 1 for 0;
+    int sin = 0;
+    int cos = 0;
+    for (int i = 1; i < intersection_count; i++) {
+        if (*(sins + sin) > *(cosins + cos)) {
+            *(intersections + i) = *(cosins + cos);
+            cos++;
+        } else {
+            *(intersections + i) = *(sins + sin);
+            sin++;
+        }
+    }
+    for (int i = 0; i < intersection_count; i++) {
+        printf("intersecion %d: %d\n", i, *(intersections + i));
+    }
 
     if (dragons) {
         printf("There be dragons!\n");
@@ -446,6 +563,13 @@ int main(int argc, char const *argv[])
 
     printf("c = %d\n", c);
 
+    
+    
+    
+    
+    //-----------------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------------------
     printf("year_number_length: %d\n", year_number_length);
     for (int i = 0; i < year_number_length; i++) { // Test fill_in_digits
         printf("[%d]\n", *(digits + i));// * sizeof(int)));
