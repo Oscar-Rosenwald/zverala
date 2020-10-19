@@ -4,17 +4,6 @@
 #include<stdio.h>
 #include<string.h>
 
-int this_doubleyear;
-char direction;
-int outward; //
-int* digits;
-int year_number_length;
-int *sins;
-int *cosins;
-long double *help_trigonometry;
-const int ROOT_SIZE = 30;
-int *intersections;
-
 typedef enum {
     January,
     February,
@@ -29,6 +18,66 @@ typedef enum {
     November,
     December
 } Month;
+
+int this_doubleyear;
+int this_year;
+char direction;
+int outward; //
+int* digits;
+int year_number_length;
+int *sins;
+int *cosins;
+long double *help_trigonometry;
+const int ROOT_SIZE = 30;
+int *intersections;
+struct Being *mythical_beings;
+char *beings[] = {
+    "Chiméra",
+    "Fénix",
+    "Toch Amogaši",
+    "Sfinga",
+    "Vlkodlak",
+    "Zlovlk",
+    "Jednorožec",
+    "Griffin",
+    "Lví želva",
+    "Kraken",
+    "Kyklop",
+    "Syréna",
+    "Yeti",
+    "Nessie",
+    "Vyjící chluporyba",
+    "Olifant",
+    "Ždiboň",
+    "Ent",
+    "Labuť",
+    "Goa'uld",
+    "Kerberos",
+    "Bazilišek",
+    "Akromantule",
+    "Vetřelec",
+    "Létající bizon",
+    "Pegas",
+    "Mothra",
+    "Sleipnir",
+    "Velká A'tuin",
+    "Horus",
+    "Hydra",
+    "Cthulhu",
+    "Balrog",
+    "Odgru Jahad",
+};
+char *dragons_types[] = {
+    "ohně",
+    "země",
+    "života",
+    "vody",
+    "dřeva",
+    "smrti",
+    "vzduchu",
+    "chaosu"
+};
+int dragon_after_index[] = {0, 2, 5, 8, 14, 18, 23, 29};
 
 struct Date {
     int day;
@@ -57,12 +106,12 @@ int days_of_month(Month month, int year) {
         return 30;
     default: // February
         if (year % 4 == 0) {
-            if (year % 100 == 0 && year % 1000 != 0) {
-                return 28;
-            } else if (year % 1000 == 0) {
+            if (year % 1000 == 0) {
                 return 29;
-            } else {
+            } else if (year % 100 == 0) {
                 return 28;
+            } else {
+                return 29;
             }
         } else {
             return 28;
@@ -116,14 +165,6 @@ void add_days_to_date(struct Date *date, int days) {
             date->month = next_month(month);
             if (date->month == January) {
                 date->year++;
-                if (date->outward) {
-                    date->outward = 0;
-                    sprintf(date->dyear, "%dS", date->doubleyear);
-                } else {
-                    date->doubleyear++;
-                    date->outward = 1;
-                    sprintf(date->dyear, "%dO", date->doubleyear);
-                }
             }
         }
     }
@@ -135,7 +176,6 @@ int count_number_length(int number) {
         number /= 10;
         count++;
     }
-    //printf("count: %d\n", count);
     return count;
 }
 
@@ -146,16 +186,10 @@ void fill_in_digits() {
     digits = (int *) malloc ((digit_count + 1) * sizeof(int));
     int* digits_temp = digits;
     year_number_length = digit_count;
-    //printf("Pointless, but necessary for some fucked-up reason: %d\n", digit_count);
     this_year = this_doubleyear;
-    printf("Fill_in_digits - double year: %d %c\n", this_doubleyear, direction);
     for (int i = 0; i < digit_count; i++) {
         int num = this_year % 10;
         *(digits_temp + (digit_count - 1) - i) = this_year % 10;
-        /* for (int j = 0; j <= i; j++) {
-            printf("%d: %d\n", j, *(digits + j*sizeof(int)));
-        } */
-        //digits_temp += 1;//sizeof(int);
         this_year /= 10;
     }
 }
@@ -165,48 +199,38 @@ int* convert_int(int number) {
     char string[length+1]; // +1 for \x00
     sprintf(string, "%d", number);
     int* digs = (int *) malloc (sizeof(int) * length);
-    //int digs_ar[length];
     int* dig_temp = digs;
     for (int i = 0; i < length; i++) {
-        //digs_ar[i] = string[i] - '0';
-        //printf("Here%d: %d\n    %d\n", i, digs_ar[i], string[i] - '0');
         *dig_temp = string[i] - '0';
         dig_temp += 1;
     }
-    //digs = digs_ar;
     return digs;
 }
 
 int* convert_double(double number, int decimal_points) {
     number = number * (pow(10, decimal_points));
     int num = (int) number;
-    printf("truncated number: %d\n", num);
     return convert_int(num);
 }
 
 int calculate_a() {
     int result = this_doubleyear % 9 + 1;
-    printf("a: %d\n", result);
     return result;
 }
 
 int convert_int_arr_to_int(int* array, int array_length) {
     int result = 0;
     for (int i = array_length - 1; i >= 0; i--) {
-        result += ((int) pow(10.0, i)) * array[array_length - i - 1];
-        //printf("result: %d\n", result);
+        result += ((int) pow(10.0, i)) * *(array + array_length - i - 1);
     }
-    printf("int from array: %d\n", result);
     return result;
 }
 
 int add_array_integers(int* array, int array_length) {
     int result = 0;
     for (int i = 0; i < array_length; i++) {
-        printf("array to add: %d\n", array[i]);
         result += array[i];
     }
-    printf("adding array: %d\n", result);
     if (result >= 10) {
         int* new_operation = convert_int(result);
         int length = count_number_length(result);
@@ -255,11 +279,6 @@ int calculate_b() {
         }
     }
 
-    printf("(-1;+1); (+1; -1):\n");
-    for (int i = 0; i < year_number_length; i++) {
-        printf("first: [%d]; second: [%d]\n", first_sub_calc[i], second_sub_calc[i]);
-    }
-
     int first_sub_num = convert_int_arr_to_int(first_sub_calc, year_number_length);
     int second_sub_num = convert_int_arr_to_int(second_sub_calc, year_number_length);
 
@@ -270,7 +289,6 @@ int calculate_b() {
     } else {
         third_sub_num = (double) second_sub_num / first_sub_num;
     }
-    printf("third: %lf\n", third_sub_num);
 
     int number_after_decimal = year_number_length;
     int sub_result_added;
@@ -282,13 +300,11 @@ int calculate_b() {
     } else { // Length of number -> 5
         sub_result_added = add_array_integers(sub_result, number_after_decimal + 1);
     } // Never exeeds five.
-    printf("b: %d\n", sub_result_added);
     free(sub_result);
     return sub_result_added;
 }
 
 void swap_numbers(int* one, int* two) {
-    printf("swapping: %d, %d\n", *one, *two);
     int help = *one;
     *one = *two;
     *two = help;
@@ -300,12 +316,10 @@ int calculate_c() {
     int previous_min = 0; // Start at 0 so the first iteration passes.
     int prev_min_index = -1; // Start at -1 so the first iteration always passes.
     int prev_min_index_help = prev_min_index;
-    printf("\nNext: c test\n");
     for (int places = 0; places < year_number_length; places++) {
         current_min = 10; // We start with this, so that any digits will be smaller on the first iteration of digs.
         for (int digs = 0; digs < year_number_length; digs++) {
             int* num = digits + digs;
-            //printf("*num = %d\ncurrent_min = %d\nprevious_min = %d\nprev_min_index = %d\n\n", *num, current_min, previous_min, prev_min_index);
             if (*num < current_min) {
                 if (*num > previous_min) {
                     current_min = *num;
@@ -325,7 +339,6 @@ int calculate_c() {
     }
 
     for (int i = 0; i < year_number_length; i++) {
-        printf("[%d] ", original_places[i]);
     }
 
     int sub_result1 = convert_int_arr_to_int(original_places, year_number_length);
@@ -355,7 +368,6 @@ int there_be_dragons() {
     for (int i = 0; i < sizeof(dividers) / sizeof(dividers[0]); i++) {
         if (dividers[i] != 0) {
             if (this_doubleyear % dividers[i] == 0) {
-                printf("%d / %d = %d\n", this_doubleyear, dividers[i], this_doubleyear / dividers[i]);
                 how_many_dividers++;
             }
         }
@@ -372,7 +384,6 @@ int convert_year(int global, int this_year) {
     int difference = this_year - beginning; // No. of normal years since the beginning
     int double_year = difference / 2;
     if (global) {
-        printf("global\n");
         outward = 0;
         direction = 'S';
     }
@@ -403,7 +414,7 @@ int days_of_kyear(int year, int first_solstice, int second_solstice) {
     date->day = first_solstice;
     date->month = December;
     char* dyear = malloc(16*sizeof(char));
-    sprintf(dyear, "%d%c", date->doubleyear, outward);
+    sprintf(dyear, "%d %c", date->doubleyear, outward);
     date->dyear = dyear;
 
     int result = 350; // Start with a safe but sufficiently large value
@@ -414,8 +425,6 @@ int days_of_kyear(int year, int first_solstice, int second_solstice) {
         result++;
     }
 
-    printf("doubleyear for solstices: %s", date->dyear);
-
     free(dyear);
     free(date);
     return result;
@@ -423,9 +432,9 @@ int days_of_kyear(int year, int first_solstice, int second_solstice) {
 
 void convert_year_globally() {
     char normal_year[20]; // At most 4 digits, plus a potential negative, plus newline
+	printf("Zadejte rok (normální): ");
     scanf("%s", normal_year);
-    int this_year = atoi(normal_year); // Converts string to number, ignores all which is not a number
-    printf("normal year: %s - %d\n", normal_year, this_year);
+    this_year = atoi(normal_year); // Converts string to number, ignores all which is not a number
     convert_year(1, this_year);
 }
 
@@ -438,7 +447,7 @@ void free_memory() {
 }
 
 void get_sins(int a) {
-    for (int k = 0; k < ROOT_SIZE; k++) {
+    for (int k = 1; k < ROOT_SIZE; k++) {
         *(help_trigonometry + k - 1) = (long double) sqrt((M_PI *  k)/a);
     }
 }
@@ -453,31 +462,21 @@ void get_cosins(int b, int c) {
     do {
         parameter_bound += 2;
         root = calculate_period(parameter_bound, b);
-        printf("root = %Lf; k = %d\n", root, parameter_bound);
     } while (root < 1);
     parameter_bound -= 2; // After the last check, parameter_bound will be 2 too big.
 
     int how_many_roots = (parameter_bound / 2 + 1);
     long double sub_results[how_many_roots][2];
-    // OBSOLITE 2 for k (one for PI - result); one for -k (not two - x would be negative, unless PI - (- k))
 
     for (int i = 0; i < how_many_roots; i++) {
         int parameter = i * 2 + 1; // Get the odd number
-        printf("period_max = %d; i = %d\nparameter = %d\n", parameter_bound, i, parameter);
         root = calculate_period(parameter, b);
         long double argsin = asinl(root);
         long double res1 = argsin / c;
         long double res2 = (M_PI - argsin) / c;
-        //root = calculate_period(-parameter, b);
-        //argsin = asinl(root);
-        //long double res3 = (M_PI - argsin) / c;
         sub_results[i][0] = res1;
         sub_results[i][1] = res2;
-        //sub_results[i][2] = res3;
-        printf("cosin: [%Lf]\ncosin: [%Lf]\n", sub_results[i][0], sub_results[i][1]);
     }
-
-    printf("ROOT_SIZE / (2 * how_many_roots) = %d\n", ROOT_SIZE / (2 * how_many_roots));
     
     int repeat = ROOT_SIZE / (2 * how_many_roots);
     for (int period = 0; period < repeat; period++) {
@@ -485,7 +484,6 @@ void get_cosins(int b, int c) {
             int offset = period * how_many_roots * 2;
             *(help_trigonometry + offset + j) = sub_results[j][0] + (period * (M_PI / c));
             *(help_trigonometry + offset + how_many_roots * 2 - j - 1) = sub_results[j][1] + (period * (M_PI / c));
-            printf("%d  b: [%Lf]\n   b: [%Lf]\n", period, help_trigonometry[offset + j], help_trigonometry[offset + how_many_roots * 2 - j - 1]);
         }
     }
 }
@@ -506,10 +504,15 @@ void expand_double_to_int_array (int *array_to, long double *array_from, int arr
     }
 }
 
+char* date_to_string(struct Date *date) {
+    char *result = malloc(32 * sizeof (char));
+    sprintf(result, "%d.%d. %d / %s", date->day, date->month + 1, date->year, date->dyear);
+    return result;
+}
+
 int main(int argc, char const *argv[])
 {
     convert_year_globally(); // Sets global variables.
-    printf("Global - this doubleyear: %d\n", this_doubleyear);
     fill_in_digits(); // Split year into digits and store them globaly
     
     int a = calculate_a();
@@ -523,18 +526,9 @@ int main(int argc, char const *argv[])
 
     get_sins(a);
     expand_double_to_int_array(sins, help_trigonometry, ROOT_SIZE);
-    for (int i = 0; i < ROOT_SIZE; i++) {
-        printf("sin %d: %d\n", i, *(sins + i));
-    }
 
     get_cosins(b, c);
     expand_double_to_int_array(cosins, help_trigonometry, ROOT_SIZE);
-    for (int i = 0; i < ROOT_SIZE; i++) {
-        printf("sin %d: %d\n", i, *(sins + i));
-    }
-    for (int i = 0; i < ROOT_SIZE; i++) {
-        printf("cosin %d: %d\n", i, *(cosins + i));
-    }
 
     int intersection_count = 34;
     intersections = malloc(intersection_count*sizeof(int));
@@ -551,67 +545,97 @@ int main(int argc, char const *argv[])
             sin++;
         }
     }
-    for (int i = 0; i < intersection_count; i++) {
-        printf("intersecion %d: %d\n", i, *(intersections + i));
-    }
 
     if (dragons) {
-        printf("There be dragons!\n");
+        printf("JE ROK DRAKŮ!\n");
     } else {
-        printf("No dragons this year.\n");
+        printf("Letos bez draků.\n");
     }
 
-    printf("c = %d\n", c);
-
-    
-    
-    
-    
-    //-----------------------------------------------------------------------------------------------------
-    //-----------------------------------------------------------------------------------------------------
-    //-----------------------------------------------------------------------------------------------------
-    printf("year_number_length: %d\n", year_number_length);
-    for (int i = 0; i < year_number_length; i++) { // Test fill_in_digits
-        printf("[%d]\n", *(digits + i));// * sizeof(int)));
-    }
-    printf("Next: test convert_int\n");
-
-    int a_test = 72346; // Test convert_int
-    int* ar = convert_int(a_test);
-    for (int i = 0; i < 5; i++) {
-        printf("[%d]\n", *(ar + i));//*sizeof(int)));
+    for (int i = 0; i < intersection_count - 1; i++) {
+        *(intersections + i) = *(intersections + i + 1) - *(intersections + i);
     }
 
-    printf("Next: test convert_double\n");
-    double b_test = 2.45639; // Test for convert_double
-    int decimal = 4;
-    int* c_ar = convert_double(b_test, decimal);
-    for (int i = 0; i < 5; i++) {
-        printf("[%d]\n", *(c_ar + i));
+    int portions_added = 0;
+    for (int i = 0; i < intersection_count - 1; i++) {
+        portions_added += *(intersections + i);
     }
 
-    printf("\nNext: add days test:\n");
-    struct Date *date = malloc(sizeof(struct Date));
-    date->year = 2013;
-    date->doubleyear = 27072;
-    date->outward = 0;
-    char* double_year_test = malloc(16*sizeof(char));
-    sprintf(double_year_test, "27072S");
-    date->dyear = double_year_test;
-    date->month = March;
-    date->day = 21;
+    int solstice1;
+    int solstice2;
+    printf("Zimní slunovrat roku %d (den v prosinci): ", this_year - 1);
+    scanf("%d", &solstice1);
+    printf("Zimní slunovrat roku %d (den v prosinci): ", this_year);
+    scanf("%d", &solstice2);
+    int kyear_lenth = days_of_kyear(this_year - 1, solstice1, solstice2);
+    if (dragons) {
+        kyear_lenth -= 8;
+    }
+    
+    int used_days = 0;
+    int *being_duration = malloc(34*sizeof(int));
+    for (int i = 1; i < intersection_count; i++) {
+        *(being_duration + i) = (kyear_lenth * *(intersections + i - 1)) / portions_added;
+        used_days += *(being_duration + i);
+    }
+    *being_duration = kyear_lenth - used_days; // For Chimera
 
-    add_days_to_date(date, 378+370);
-    printf("febuary: %d\n", days_of_month(February, 2014));
-    printf("year: %d\ndoubleyear: %d%d\ndyear: %s\nmonth: %d; day: %d\n", date->year, date->doubleyear, date->outward, date->dyear,
-    date->month, date->day);
+    // In case we need to see the durations:
+    /* for (int i = 0; i < intersection_count; i++) {
+        printf("Being %d: %d days; address: %p\n", i, *(being_duration + i), being_duration + i);
+    } */
 
-    printf("\nNext: test of kyear\ndays in kyear: %d\n", days_of_kyear(2020, 21, 23));
+    int dragons_index;
+    if (outward) {
+        dragons_index = 0;
+    } else {
+        dragons_index = 7;
+    }
+    struct Date *start_date = malloc(sizeof(struct Date));
+    start_date->doubleyear = this_doubleyear;
+    start_date->year = this_year;
+    start_date->outward = outward;
+    start_date->month = December;
+    start_date->day = solstice1;
+    start_date->dyear = malloc(16*sizeof(char));
+    sprintf(start_date->dyear, "%d %c", this_doubleyear, direction);
 
-    free(c_ar);
-    free(ar);
-    free(date);
-    free(double_year_test);
+    for (int i = 0; i < intersection_count; i++) {
+        if (*(being_duration + i) != 0) {
+            char* date_string = date_to_string(start_date);
+
+            if (outward) {
+                printf("%22s______%s\n", date_string, beings[i]);
+            } else {
+                printf("%22s______%s\n", date_string, beings[intersection_count - i - 1]);
+            }
+
+            add_days_to_date(start_date, *(being_duration + i));
+            free(date_string);
+        }
+        if (dragons) {
+            // If it's a turn for a dragon
+            char* date_string = date_to_string(start_date);
+
+            if (outward) {
+                if (dragon_after_index[dragons_index] == i) {
+                    printf("%22s______Drak %s\n", date_string, dragons_types[dragons_index]);
+                    dragons_index++;
+                }
+            } else {
+                if (dragon_after_index[dragons_index] == intersection_count - i - 2) {
+                    printf("%22s______Drak %s\n", date_string, dragons_types[dragons_index]);
+                    dragons_index--;
+                }
+            }
+
+            add_days_to_date(start_date, 1);
+            free(date_string);
+        }
+    }
+    free(start_date->dyear);
+    free(start_date);
+    free(being_duration);
     free_memory();
     return 0;
 }
