@@ -600,13 +600,43 @@ int main(int argc, char const *argv[])
     start_date->dyear = malloc(16*sizeof(char));
     sprintf(start_date->dyear, "%d %c", this_doubleyear, direction);
 
+    // Prepare to write to file, if that is what's wanted
+    int to_file = 0;
+    if (argc > 1){
+        to_file = strcmp(argv[1], "-f");
+        if (to_file == 0) {
+            to_file = 1;
+        } else {
+            to_file = 0;
+        }
+    }
+
+    FILE *file;
+    if (to_file) {
+        file = fopen("Zvěrála.txt", "w");
+
+        if(file == NULL)
+        {
+            printf("Error!");   
+            exit(1);             
+        }
+        fprintf(file, "Rok %d / %d %c\n\n", this_year, this_doubleyear, direction);
+    }
+
+
     for (int i = 0; i < intersection_count; i++) {
         if (*(being_duration + i) != 0) {
             char* date_string = date_to_string(start_date);
 
             if (outward) {
+                if (to_file) {
+                    fprintf(file, "%22s______%s\n", date_string, beings[i]);
+                }
                 printf("%22s______%s\n", date_string, beings[i]);
             } else {
+                if (to_file) {
+                    fprintf(file, "%22s______%s\n", date_string, beings[intersection_count - i - 1]);
+                }
                 printf("%22s______%s\n", date_string, beings[intersection_count - i - 1]);
             }
 
@@ -619,11 +649,15 @@ int main(int argc, char const *argv[])
 
             if (outward) {
                 if (dragon_after_index[dragons_index] == i) {
+                    if (to_file) {
+                        fprintf(file, "%22s______Drak %s\n", date_string, dragons_types[dragons_index]);
+                    }
                     printf("%22s______Drak %s\n", date_string, dragons_types[dragons_index]);
                     dragons_index++;
                 }
             } else {
                 if (dragon_after_index[dragons_index] == intersection_count - i - 2) {
+                    fprintf(file, "%22s______Drak %s\n", date_string, dragons_types[dragons_index]);
                     printf("%22s______Drak %s\n", date_string, dragons_types[dragons_index]);
                     dragons_index--;
                 }
@@ -632,6 +666,9 @@ int main(int argc, char const *argv[])
             add_days_to_date(start_date, 1);
             free(date_string);
         }
+    }
+    if (to_file) {
+        fclose(file);
     }
     free(start_date->dyear);
     free(start_date);
