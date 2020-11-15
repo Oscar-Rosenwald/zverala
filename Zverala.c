@@ -28,6 +28,7 @@ int year_number_length;
 int *sins;
 int *cosins;
 long double *help_trigonometry;
+char file_name[100];
 const int ROOT_SIZE = 36;
 int *intersections;
 struct Being *mythical_beings;
@@ -433,11 +434,36 @@ int days_of_kyear(int year, int first_solstice, int second_solstice) {
     return result;
 }
 
+void printYearFromFile (FILE* file) {
+    char temp[100];
+
+    fgets(temp, 100, file); // Empty line
+    printf("Rok %d nalezen v souboru %s\n", this_year, file_name);
+    while(fgets(temp, 100, file)) {
+        if (strncmp(temp, "Rok", 3) == 0) {
+            return;
+        }
+        printf("%s", temp);
+    }
+}
+
 void convert_year_globally() {
-    char normal_year[20]; // At most 4 digits, plus a potential negative, plus newline
+    char normal_year[4]; // At most 4 digits, plus a potential negative, plus newline
 	printf("Zadejte rok (normalni): ");
     scanf("%s", normal_year);
+    char n_year[9];
+    sprintf(n_year, "Rok %s", normal_year);
     this_year = atoi(normal_year); // Converts string to number, ignores all which is not a number
+    FILE* file;
+    char temp[100];
+    if (file = fopen(file_name, "r")) {
+        while (fgets(temp, 100, file)) {
+            if (strncmp(temp, n_year, 8) == 0) {
+                printYearFromFile(file);
+                exit(0);
+            }
+        }
+    }
     convert_year(1, this_year);
 }
 
@@ -529,9 +555,32 @@ char* date_to_string(struct Date *date) {
     return result;
 }
 
+void help() {
+    printf("Jak na to:\n");
+    printf("-n        ... Nepsat do souboru\n");
+    printf("-f <xxx>  ... Hledat/zapsat do souboru xxx\n");
+    printf("-h --help ... Zobrazit tento text\n");
+}
+
 int main(int argc, char const *argv[])
 {
-    convert_year_globally(); // Sets global variables.
+    sprintf(file_name, "Zverala.txt"); 
+    if (argc > 1) {
+        if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+            help();
+            exit(1);
+        }
+
+        if (strcmp(argv[1], "-f") == 0) {
+            if (argc == 3) {
+                sprintf(file_name, "%s", argv[2]);
+            } else {
+                help();
+                exit(1);
+            }
+        }
+    }
+    convert_year_globally(); // Sets changable global variables.
     fill_in_digits(); // Split year into digits and store them globaly
     
     int a = calculate_a();
@@ -633,7 +682,7 @@ int main(int argc, char const *argv[])
 
     FILE *file;
     if (to_file) {
-        file = fopen("Zverala.txt", "w");
+        file = fopen(file_name, "a");
         fprintf(file, "Rok %d / %d %c\n\n", this_year, this_doubleyear, direction);
     }
 
