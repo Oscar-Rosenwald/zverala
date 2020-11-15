@@ -39,12 +39,14 @@ char *beings[] = {
     "Vlkodlak",
     "Zlovlk",
     "Jednorožec",
-    "Griffin",
+	
+	"Griffin",
     "Lví želva",
     "Kraken",
     "Kyklop",
     "Syréna",
-    "Yeti",
+	
+	"Yeti",
     "Nessie",
     "Vyjící chluporyba",
     "Olifant",
@@ -53,8 +55,8 @@ char *beings[] = {
     "Labuť",
     "Goa'uld",
     "Kerberos",
-    "Bazilišek",
     "Akromantule",
+    "Bazilišek",
     "Vetřelec",
     "Létající bizon",
     "Pegas",
@@ -301,7 +303,7 @@ int calculate_b() {
         sub_result_added = add_array_integers(sub_result, number_after_decimal + 1);
     } // Never exeeds five.
     free(sub_result);
-    printf("sub_result_added = %d\n", sub_result_added);
+    /* printf("sub_result_added = %d\n", sub_result_added); */
     return sub_result_added;
 }
 
@@ -433,7 +435,7 @@ int days_of_kyear(int year, int first_solstice, int second_solstice) {
 
 void convert_year_globally() {
     char normal_year[20]; // At most 4 digits, plus a potential negative, plus newline
-	printf("Zadejte rok (normální): ");
+	printf("Zadejte rok (normalni): ");
     scanf("%s", normal_year);
     this_year = atoi(normal_year); // Converts string to number, ignores all which is not a number
     convert_year(1, this_year);
@@ -465,7 +467,6 @@ void get_cosins(int b, int c) {
         root = calculate_period(parameter_bound, b);
     } while (root < 1);
     parameter_bound -= 2; // After the last check, parameter_bound will be 2 too big.
-    printf("parametr bound: %d\n", parameter_bound);
 
     int how_many_roots = (parameter_bound / 2 + 1);
     long double sub_results[how_many_roots][2];
@@ -486,7 +487,6 @@ void get_cosins(int b, int c) {
         }
         return;
     }
-    printf("parameter_bounds >= 1\n");
 
     int repeat = ROOT_SIZE / (2 * how_many_roots);
     for (int period = 0; period < repeat; period++) {
@@ -502,7 +502,6 @@ void expand_double_to_int_array (int *array_to, long double *array_from, int arr
     for (int i = 0; i < array_length; i++) {
         int decimal;
         if (array_from[i] > 100) {
-            printf("array from %d: %Lf\n", i, array_from[i]);
             decimal = 7;
         } else if (array_from[i] > 10) {
             decimal = 6;
@@ -513,7 +512,6 @@ void expand_double_to_int_array (int *array_to, long double *array_from, int arr
         } else {
             decimal = 4;
         }
-        printf("decimal: %d\n", decimal);
         int * converted;
         if (decimal == 7) {
             converted = convert_double(*(array_from + i), 0);
@@ -552,16 +550,6 @@ int main(int argc, char const *argv[])
     get_cosins(b, c);
     expand_double_to_int_array(cosins, help_trigonometry, ROOT_SIZE);
 
-    for(int i = 0; i < ROOT_SIZE; i++) {
-        printf("trigonometry help %d: %Lf\n", i, *(help_trigonometry + i));
-    }
-    for (int i = 0; i < ROOT_SIZE; i++) {
-        printf("sin %d: %d\n", i, *(sins + i));
-    }
-    for (int i = 0; i < ROOT_SIZE; i++) {
-        printf("cosins %d: %d\n", i, *(cosins + i));
-    }
-
     int intersection_count = 34;
     intersections = malloc(intersection_count*sizeof(int));
     *intersections = 0;
@@ -577,32 +565,27 @@ int main(int argc, char const *argv[])
             cos++;
         }
     }
-    for (int i = 0; i < intersection_count; i++) {
-        printf("intersection %d: %d\n", i, *(intersections + i));
-    }
 
     if (dragons) {
-        printf("JE ROK DRAKŮ!\n");
+        printf("JE ROK DRAKU!\n");
     } else {
-        printf("Letos bez draků.\n");
+        printf("Letos bez draku.\n");
     }
 
     for (int i = 0; i < intersection_count - 1; i++) {
         *(intersections + i) = *(intersections + i + 1) - *(intersections + i);
-        printf("intersection %d: %d\n", i, *(intersections + i));
     }
 
     int portions_added = 0;
     for (int i = 0; i < intersection_count - 1; i++) {
-        printf("portions added: %d\n", portions_added);
         portions_added += *(intersections + i);
     }
 
     int solstice1;
     int solstice2;
-    printf("Zimní slunovrat roku %d (den v prosinci): ", this_year - 1);
+    printf("Zimni slunovrat roku %d (den v prosinci): ", this_year - 1);
     scanf("%d", &solstice1);
-    printf("Zimní slunovrat roku %d (den v prosinci): ", this_year);
+    printf("Zimni slunovrat roku %d (den v prosinci): ", this_year);
     scanf("%d", &solstice2);
     int kyear_lenth = days_of_kyear(this_year - 1, solstice1, solstice2);
     if (dragons) {
@@ -612,16 +595,15 @@ int main(int argc, char const *argv[])
     int used_days = 0;
     int *being_duration = malloc(34*sizeof(int));
     for (int i = 1; i < intersection_count; i++) {
-        printf("kyear_length: %d\nintersections: %d\nportions added: %d\n\n", kyear_lenth, *(intersections + i - 1), portions_added);
         *(being_duration + i) = (kyear_lenth * *(intersections + i - 1)) / portions_added;
         used_days += *(being_duration + i);
     }
     *being_duration = kyear_lenth - used_days; // For Chimera
 
     // In case we need to see the durations:
-    for (int i = 0; i < intersection_count; i++) {
+    /* for (int i = 0; i < intersection_count; i++) {
         printf("Being %d: %d days; address: %p\n", i, *(being_duration + i), being_duration + i);
-    }
+    } */
 
     int dragons_index;
     if (outward) {
@@ -639,26 +621,25 @@ int main(int argc, char const *argv[])
     sprintf(start_date->dyear, "%d %c", this_doubleyear, direction);
 
     // Prepare to write to file, if that is what's wanted
-    int to_file = 0;
+    int to_file = 1;
     if (argc > 1){
-        to_file = strcmp(argv[1], "-f");
+        to_file = strcmp(argv[1], "-n");
         if (to_file == 0) {
-            to_file = 1;
-        } else {
             to_file = 0;
+        } else {
+            to_file = 1;
         }
     }
 
     FILE *file;
     if (to_file) {
-        file = fopen("Zvěrála.txt", "w");
+        file = fopen("Zverala.txt", "w");
         fprintf(file, "Rok %d / %d %c\n\n", this_year, this_doubleyear, direction);
     }
 
     for (int i = 0; i < intersection_count; i++) {
         if (*(being_duration + i) != 0) {
             char* date_string = date_to_string(start_date);
-      //      printf("%d.%d\n", start_date->day, start_date->month + 1);
 
             if (outward) {
                 if (to_file) {
@@ -673,13 +654,11 @@ int main(int argc, char const *argv[])
             }
 
             add_days_to_date(start_date, *(being_duration + i));
-    //        printf("%d.%d\n", start_date->day, start_date->month + 1);
             free(date_string);
         }
         if (dragons) {
             // If it's a turn for a dragon
             char* date_string = date_to_string(start_date);
-  //          printf("%d.%d\n", start_date->day, start_date->month + 1);
 
             if (outward) {
                 if (dragon_after_index[dragons_index] == i) {
@@ -700,11 +679,9 @@ int main(int argc, char const *argv[])
                     add_days_to_date(start_date, 1);
                 }
             }
-//            printf("%d.%d\n\n", start_date->day, start_date->month + 1);
             free(date_string);
         }
     }
-    printf("\n\n%d.%d %d\n", start_date->day, start_date->month + 1, start_date->year);
     if (to_file) {
         fclose(file);
     }
