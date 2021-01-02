@@ -296,13 +296,13 @@ int calculate_b() {
     int number_after_decimal = year_number_length;
     int sub_result_added;
 
-    int* sub_result = convert_double(third_sub_num, number_after_decimal); // 4 is the decimal point count for years.
+    int* sub_result = convert_double(third_sub_num, number_after_decimal); // Creates an array with digits up until the number_after_decimal-th digit after the decimal point.
     // Check the length of the number
-    if (third_sub_num < 1) { // Length of number -> 4
+    if (third_sub_num < 1) { // Only the digits after decimal point
         sub_result_added = add_array_integers(sub_result, number_after_decimal);
-    } else { // Length of number -> 5
+    } else { // Use the digit before the decimal
         sub_result_added = add_array_integers(sub_result, number_after_decimal + 1);
-    } // Never exeeds five.
+    } // Never more than one digit before decimal.
     free(sub_result);
     /* printf("sub_result_added = %d\n", sub_result_added); */
     return sub_result_added;
@@ -643,11 +643,31 @@ int main(int argc, char const *argv[])
     
     int used_days = 0;
     int *being_duration = malloc(34*sizeof(int));
-    for (int i = 1; i < intersection_count; i++) {
-        *(being_duration + i) = (kyear_lenth * *(intersections + i - 1)) / portions_added;
+
+	// Due to Chimera not always being first in the list,
+	// we must set where the iterations over durations will go to
+	// and where they'll stop. Then we'll assign the unused days
+	// to Chimera, wherever it may be.
+	int intersection_begin_index;
+	int intersection_end_index;
+	if (outward) { // Chimera is first this kyear
+	  intersection_begin_index = 1;
+	  intersection_end_index = intersection_count;
+	} else { // Chimera is last
+	  intersection_begin_index = 0;
+	  intersection_end_index = intersection_count - 1;
+	}
+	  
+    for (int i = intersection_begin_index; i < intersection_end_index; i++) {
+        *(being_duration + i) = (kyear_lenth * *(intersections + i - intersection_begin_index)) / portions_added;
         used_days += *(being_duration + i);
     }
-    *being_duration = kyear_lenth - used_days; // For Chimera
+
+	if (outward) { // Assign unused days to Chimera in first place
+	  *being_duration = kyear_lenth - used_days;
+	} else { // Assign unused days to Chimera in last place
+	  *(being_duration + intersection_count - 1) = kyear_lenth - used_days;
+	}
 
     // In case we need to see the durations:
     /* for (int i = 0; i < intersection_count; i++) {
