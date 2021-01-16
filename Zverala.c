@@ -34,37 +34,43 @@ int *intersections;
 struct Being *mythical_beings;
 char *beings[] = {
     "Chiméra",
+
     "Fénix",
     "Toch Amogaši",
+    
     "Sfinga",
     "Vlkodlak",
     "Zlovlk",
+    
     "Jednorožec",
-	
 	"Griffin",
     "Lví želva",
+
     "Kraken",
     "Kyklop",
     "Syréna",
-	
 	"Yeti",
     "Nessie",
     "Vyjící chluporyba",
+
     "Olifant",
     "Ždiboň",
     "Ent",
     "Labuť",
-    "Bazilišek",
+
     "Kerberos",
+    "Bazilišek",
     "Akromantule",
     "Goa'uld",
     "Vetřelec",
+
     "Létající bizon",
     "Pegas",
     "Mothra",
     "Sleipnir",
     "Velká A'tuin",
     "Horus",
+
     "Cthulhu",
     "Hydra",
     "Balrog",
