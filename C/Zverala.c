@@ -462,7 +462,7 @@ void convert_year_globally() {
     this_year = atoi(normal_year); // Converts string to number, ignores all which is not a number
     FILE* file;
     char temp[100];
-    if (file = fopen(file_name, "r")) {
+    if ((file = fopen(file_name, "r"))) {
         while (fgets(temp, 100, file)) {
             if (strncmp(temp, n_year, 8) == 0) {
                 printYearFromFile(file);
