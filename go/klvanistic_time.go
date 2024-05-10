@@ -123,20 +123,21 @@ func computeDoubleyear(normalYear, yearEnd time.Time) kYear {
 }
 
 func isDragonYear(doubleYear kYear) bool {
+	printDebug("Je to krok draga?")
 	dragonDigit := doubleYear.doubleyearDigits[len(doubleYear.doubleyearDigits)-1]
 	var (
-		holyDragonNum_3 = 3
-		holyDragonNum_5 = 5
-		holyDragonNum_7 = 7
+		dragonNum_3 = 3
+		dragonNum_5 = 5
+		dragonNum_7 = 7
 	)
 
 	if doubleYear.direction == OUT {
-		holyDragonNum_5 = dragonDigit
+		dragonNum_5 = dragonDigit
 	} else {
-		holyDragonNum_7 = dragonDigit
+		dragonNum_7 = dragonDigit
 	}
 
-	fmt.Printf("holy numbers: %d, %d, %d\n", holyDragonNum_3, holyDragonNum_5, holyDragonNum_7) // ___
+	printDebug("Dračí čísla jsou: %d %d %d", dragonNum_3, dragonNum_5, dragonNum_7)
 
 	dy := doubleYear.doubleyear
 	divisibleBy := 0
@@ -147,9 +148,9 @@ func isDragonYear(doubleYear kYear) bool {
 		}
 	}
 
-	doForHolyNumber(holyDragonNum_3)
-	doForHolyNumber(holyDragonNum_5)
-	doForHolyNumber(holyDragonNum_7)
+	doForHolyNumber(dragonNum_3)
+	doForHolyNumber(dragonNum_5)
+	doForHolyNumber(dragonNum_7)
 
 	return divisibleBy == 2
 }

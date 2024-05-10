@@ -45,6 +45,8 @@ func parseArgs() {
 				os.Exit(1)
 			}
 			file = args[i+1]
+		case "--debug":
+			Debug = true
 		default:
 			if arg != file {
 				fmt.Printf("Neznámý argument %s\n", arg)
@@ -101,7 +103,7 @@ func printHelp() {
 }
 
 func readYearFromFile(doubleYear kYear) (yearDetail string, success bool) {
-	fmt.Printf("Reading file %s (looking for %s)\n", file, doubleYear.toReadableString()) // ___
+	printDebug("Otevírám soubor %s", file)
 	f, err := os.Open(file)
 	handleError(err)
 	defer f.Close()
@@ -115,7 +117,9 @@ func readYearFromFile(doubleYear kYear) (yearDetail string, success bool) {
 		line := file.Text()
 		fmt.Printf("Read line '%s'\n", line) // ___
 
+		printDebug("Porovnávám s uloženým krokem %s", doubleYear.toReadableString())
 		if line == doubleYear.toReadableString() {
+			printDebug("Našel jsem shodu v krocích")
 			for noEnd {
 				yearDetail += fmt.Sprintf("\n%s", line)
 				noEnd = file.Scan()
@@ -131,6 +135,7 @@ func readYearFromFile(doubleYear kYear) (yearDetail string, success bool) {
 	}
 
 	fmt.Printf("End of file\n") // ___
+	printDebug("Krok není uložen v souboru")
 	return "", false
 }
 

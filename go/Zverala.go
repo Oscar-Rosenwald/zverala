@@ -13,6 +13,8 @@ func calculate_a(doubleyear int) int {
 }
 
 func calculate_b(doubleyearDigits []int, isOutward bool) int {
+	// add adds NUM and THING. But must be below 10. If the result is > 9,
+	// return 1. If the result is < 0, return 9. Otherwise return result.
 	add := func(num, thing int) int {
 		num += thing
 		if num < 0 {
@@ -44,6 +46,8 @@ func calculate_b(doubleyearDigits []int, isOutward bool) int {
 
 	upAngle := getYearNumberFromSlice(upAngleSlice)
 	downAngle := getYearNumberFromSlice(downAngleSlice)
+	printDebug("Úhel odrazu: %d", upAngle)
+	printDebug("Úhel dopadu: %d", downAngle)
 	var partialAnswer float64
 
 	if isOutward {
@@ -60,6 +64,12 @@ func calculate_b(doubleyearDigits []int, isOutward bool) int {
 }
 
 func calculate_c(doubleyear int, doubleyearDigits []int) int {
+	// 1. Index all digits of the doubleyear number.
+	// 2. Order digits in ascending order.
+	// 3. Read the Big Index: The number resulting from reading the indexes of the ordered digits.
+	// 4. Add the doubleyear number to the big index.
+	// 5. c = sum above % 9 + 1
+
 	digits := make([]*numWithIndex, len(doubleyearDigits))
 	for i, d := range doubleyearDigits {
 		entry := &numWithIndex{num: d, index: i + 1}
@@ -75,13 +85,16 @@ func calculate_c(doubleyear int, doubleyearDigits []int) int {
 		}
 	}
 
+	printDebug("Cifry kroku podle velikosti: %+v", digits)
 	bigIndex := getYearNumber(digits)
+	printDebug("Velký index: %d", bigIndex)
 	coefficient := bigIndex * doubleyear
 
 	return coefficient%9 + 1
 }
 
 func getSins(a int) []float64 {
+	printDebug("Kořeny sinů:")
 	ret := make([]float64, NUM_CREATURES)
 
 	// sin(ax^2) = 0
@@ -91,6 +104,7 @@ func getSins(a int) []float64 {
 		root := (float64(k) * float64(math.Pi)) / float64(a)
 		res := math.Sqrt(root)
 		ret[k] = res
+		printDebug("SIN: %v", res)
 	}
 
 	return ret
@@ -133,6 +147,9 @@ func getCosins(b, c int) []float64 {
 	// We'll only get half the results, but the other half will be equal to
 	// the first, except for the negative results, which again we don't care for.
 
+	printDebug("Kořeny cosinů:")
+	const COS = "COS: "
+
 	var roots []float64
 	for k := 0; true; k++ {
 		root := float64(2*k+1) / float64(2*b)
@@ -140,6 +157,7 @@ func getCosins(b, c int) []float64 {
 		if root > 1 {
 			break
 		}
+		printDebug(COS+"Základní kořen cosinu: %v", root)
 		roots = append(roots, root)
 	}
 
@@ -157,33 +175,60 @@ func getCosins(b, c int) []float64 {
 	}
 
 	sort.Float64s(baseResults)
+	if Debug {
+		for _, res := range baseResults {
+			printDebug(COS+"Základní kořen vnitřního sinu: %v", res)
+		}
+	}
 
 	var ret []float64
 	period := float64(math.Pi) / float64(c)
 
 	for i := 0; i < NUM_CREATURES; i++ {
-		fmt.Printf("Animal number: %d\n", i)
+		fmt.Printf("Animal number: %d\n", i) // ___
 		for j := 0; j < len(baseResults); j++ {
 			base := baseResults[j]
 			newResult := base + period*float64(i)
-			fmt.Printf("new result: %v; base result: %v\n", newResult, base)
 			ret = append(ret, newResult)
 		}
 		fmt.Println()
 	}
-	fmt.Println("==========")
-	fmt.Println()
+	fmt.Println("==========") // ___
+	fmt.Println()             // ___
 
 	sort.Float64s(ret)
+	if Debug {
+		for _, res := range ret {
+			printDebug(COS+"Nový kořen: %v", res)
+		}
+	}
+
 	return unduplicateSlice(ret)
 }
 
 func getOrderedSteps(a, b, c int, sins, cosins []float64) []float64 {
+	printDebug("Počítám déklů Lysákových skoků")
 	results := []float64{}
 	prev := float64(0)
 	sinIndex := 1 // First intersection with x-axis is always from the sine half of the results
 	cosIndex := 0
 	fmt.Printf("final difference 0 (index 0, previous N/A, smaller 0, s N/A, c N/A, sin index 0, cos index N/A)\n")
+
+	printStep := func(length float64, index int, sin, cos, smaller float64, sinIndex, cosIndex int) {
+		sinStr := fmt.Sprintf("%v", sin)
+		if sin < 0 {
+			sinStr = "N/A"
+		}
+		cosStr := fmt.Sprintf("%v", cos)
+		if cos < 0 {
+			cosStr = "N/A"
+		}
+
+		printDebug("Dékla skoku: %v (index bysosti: %d; sin: %s; cos: %s; sin index: %d; cos index: %d; menší: %v)",
+			length, index, sinStr, cosStr, sinIndex, cosIndex, smaller)
+	}
+
+	printStep(0, 0, -1, -1, 0, 0, 0)
 
 	// Start from index 1, because index 0 is always 0. The last one is left
 	// out, because that is Chimera, whose days are calculated differently.
@@ -208,6 +253,7 @@ func getOrderedSteps(a, b, c int, sins, cosins []float64) []float64 {
 		newResult := smaller - prev
 		results = append(results, newResult)
 		prev = smaller
+		printStep(newResult, i, s, c, smaller, sinIndex, cosIndex)
 	}
 
 	return results
@@ -220,6 +266,7 @@ func stepsToDays(steps []float64, yearLength, totalSteps float64) []int {
 	for _, step := range steps {
 		ds := int(quiotient * step)
 		days = append(days, ds)
+		printDebug("Lysákův skok dlouhý %v koresponduje počtem dnů %d", step, ds)
 	}
 
 	return days
@@ -248,6 +295,8 @@ func getCreaturesInOrder(direction dirType, chimeraDays int, days []int) []Creat
 		}
 	}
 
+	printDebug("Bytosti v pořadí (bez draků): %v", creatures)
+
 	return creatures
 }
 
@@ -256,6 +305,7 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 		return creatures
 	}
 
+	printDebug("Přidávám draky k bytostem")
 	var retCreatures []Creature
 	dragonsAfterIndex := DragonsAfterCreatureIndex
 	dragons := Dragons
@@ -269,8 +319,10 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 		for _, index := range reversedIndexes {
 			dragonsAfterIndex = append(dragonsAfterIndex, NUM_CREATURES-index-2)
 		}
-		fmt.Printf("Inversed indexes: %v; dragons: %v\n", dragonsAfterIndex, dragons)
+		fmt.Printf("Inversed indexes: %v; dragons: %v\n", dragonsAfterIndex, dragons) // ___
 	}
+
+	printDebug("Draci následují po bytostech s těmito indexy: %v", dragonsAfterIndex)
 
 	for i, creatureIndex := range dragonsAfterIndex {
 		tailIndex := creatureIndex + 1
@@ -283,6 +335,7 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 	}
 
 	retCreatures = append(retCreatures, creatures[lastCreatureIndex:]...)
+	printDebug("Bytosti s draky: %v", retCreatures)
 
 	return retCreatures
 }
@@ -291,6 +344,7 @@ func main() {
 	parseArgs()
 	_, lastSolstice, nextSolstice := requestYearInfo()
 	doubleYear := computeDoubleyear(lastSolstice, nextSolstice)
+	printDebug("Zpracovávám dvorjok %s", doubleYear.toReadableString())
 
 	if detail, yearKnown := readYearFromFile(doubleYear); yearKnown {
 		fmt.Printf("%s\n", detail)
@@ -298,6 +352,7 @@ func main() {
 	}
 
 	dragonYear := isDragonYear(doubleYear)
+	printDebug("Letos je krok draků")
 	doubleYear.dragonYear = dragonYear
 	if dragonYear {
 		// If this is a dragon year, then we must not consider the days that are
@@ -305,9 +360,13 @@ func main() {
 		doubleYear.length -= NUM_DRAGONS
 	}
 
+	printDebug("Propočítávám pohybové zákony")
 	a := calculate_a(doubleYear.doubleyear)
+	printDebug("Parametr a: %d", a)
 	b := calculate_b(doubleYear.doubleyearDigits, doubleYear.direction == OUT)
+	printDebug("Parametr b: %d", b)
 	c := calculate_c(doubleYear.doubleyear, doubleYear.doubleyearDigits)
+	printDebug("Parametr c: %d", c)
 
 	sins := getSins(a)
 	cosins := getCosins(b, c)
@@ -325,12 +384,16 @@ func main() {
 		maxDaysLength         = daysDigits(maxDays) + 1
 	)
 
+	printDebug("Nejdelší jméno bytosti: %d (%s)", maxCreatureNameLength, longestCreatureName)
+	printDebug("Nejdleší počet dní (v cifrách): %d", maxDaysLength)
+
 	creaturesInOrder := getCreaturesInOrder(doubleYear.direction, chimeraDays, days)
 	creaturesInOrder = addDragonDays(doubleYear.dragonYear, doubleYear.direction, creaturesInOrder)
 
 	printCreatures(creaturesInOrder, doubleYear, padToColumn, maxDaysLength)
 	// TODO Add optional logging of the parameters as they are computed.
 	// TODO Print full Klvanistic date next to the normal date
+	// TODO Documentation
 
 	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
 }
