@@ -57,7 +57,6 @@ func calculate_b(doubleyearDigits []int, isOutward bool) int {
 	}
 
 	precision := math.Pow(10, float64(len(doubleyearDigits)))
-	fmt.Printf("partial answer before rounding: %v, precision %v\n", partialAnswer, precision)
 	partialAnswer = math.Floor(partialAnswer * precision)
 
 	return addDigits(getYearDigits(int(partialAnswer)))
@@ -185,16 +184,12 @@ func getCosins(b, c int) []float64 {
 	period := float64(math.Pi) / float64(c)
 
 	for i := 0; i < NUM_CREATURES; i++ {
-		fmt.Printf("Animal number: %d\n", i) // ___
 		for j := 0; j < len(baseResults); j++ {
 			base := baseResults[j]
 			newResult := base + period*float64(i)
 			ret = append(ret, newResult)
 		}
-		fmt.Println()
 	}
-	fmt.Println("==========") // ___
-	fmt.Println()             // ___
 
 	sort.Float64s(ret)
 	if Debug {
@@ -212,7 +207,6 @@ func getOrderedSteps(a, b, c int, sins, cosins []float64) []float64 {
 	prev := float64(0)
 	sinIndex := 1 // First intersection with x-axis is always from the sine half of the results
 	cosIndex := 0
-	fmt.Printf("final difference 0 (index 0, previous N/A, smaller 0, s N/A, c N/A, sin index 0, cos index N/A)\n")
 
 	printStep := func(length float64, index int, sin, cos, smaller float64, sinIndex, cosIndex int) {
 		sinStr := fmt.Sprintf("%v", sin)
@@ -319,7 +313,6 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 		for _, index := range reversedIndexes {
 			dragonsAfterIndex = append(dragonsAfterIndex, NUM_CREATURES-index-2)
 		}
-		fmt.Printf("Inversed indexes: %v; dragons: %v\n", dragonsAfterIndex, dragons) // ___
 	}
 
 	printDebug("Draci následují po bytostech s těmito indexy: %v", dragonsAfterIndex)

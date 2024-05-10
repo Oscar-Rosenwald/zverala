@@ -61,7 +61,6 @@ func parseArgs() {
 func requestYearInfo() (normalYear int, lastSolstice, nextSolstice time.Time) {
 	// TODO Remove this block - I​ got tired of inputting the same year over and over again.
 	if false {
-		fmt.Printf("RUNNING IN TEST MODE - NO YEAR NEEDS TO BE GIVEN\n\n") // ___
 		return 2021, time.Date(2020, time.December, 21, 10, 10, 10, 0, time.UTC), time.Date(2021, time.December, 21, 10, 10, 10, 0, time.UTC)
 	}
 
@@ -88,7 +87,7 @@ func requestYearInfo() (normalYear int, lastSolstice, nextSolstice time.Time) {
 	sol1 := time.Date(year-1, 12, solstice1, 12, 0, 0, 0, time.Local)
 	sol2 := time.Date(year, 12, solstice2, 12, 0, 0, 0, time.Local)
 
-	fmt.Printf("Propočítávám rok od %s do %s\n", sol1, sol2)
+	printDebug("Propočítávám rok od %s do %s\n", sol1, sol2)
 
 	return year, sol1, sol2
 }
@@ -115,7 +114,6 @@ func readYearFromFile(doubleYear kYear) (yearDetail string, success bool) {
 		handleError(file.Err())
 
 		line := file.Text()
-		fmt.Printf("Read line '%s'\n", line) // ___
 
 		printDebug("Porovnávám s uloženým krokem %s", doubleYear.toReadableString())
 		if line == doubleYear.toReadableString() {
@@ -129,12 +127,10 @@ func readYearFromFile(doubleYear kYear) (yearDetail string, success bool) {
 					return yearDetail, true
 				}
 			}
-			fmt.Printf("No more lines to read") // ___
 			return "", false
 		}
 	}
 
-	fmt.Printf("End of file\n") // ___
 	printDebug("Krok není uložen v souboru")
 	return "", false
 }

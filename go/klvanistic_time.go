@@ -111,7 +111,6 @@ func computeDoubleyear(normalYear, yearEnd time.Time) kYear {
 	doubleyear := referenceTime.doubleyear + doubleyearDiff
 
 	yearLength := int(math.Abs(float64(normalYear.Sub(yearEnd) / (time.Hour * 24))))
-	fmt.Printf("year diff %d, doubleyear diff %d, direction %s, doubleyear %d, before reference %t\n", yearDiff, doubleyearDiff, dir, doubleyear, beforeReference) // ___
 
 	return kYear{
 		doubleyear:       doubleyear,
