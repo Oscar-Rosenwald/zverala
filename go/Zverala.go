@@ -337,17 +337,19 @@ func main() {
 	parseArgs()
 	_, lastSolstice, nextSolstice := requestYearInfo()
 	doubleYear := computeDoubleyear(lastSolstice, nextSolstice)
-	printDebug("Zpracovávám dvorjok %s", doubleYear.toReadableString())
+	printDebug("Zpracovávám krok %s", doubleYear.toReadableString())
 
 	if detail, yearKnown := readYearFromFile(doubleYear); yearKnown {
 		fmt.Printf("%s\n", detail)
 		os.Exit(0)
 	}
 
+	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
+
 	dragonYear := isDragonYear(doubleYear)
-	printDebug("Letos je krok draků")
 	doubleYear.dragonYear = dragonYear
 	if dragonYear {
+		printDebug("Letos je krok draků")
 		// If this is a dragon year, then we must not consider the days that are
 		// reserved for the dragons.
 		doubleYear.length -= NUM_DRAGONS
@@ -384,9 +386,7 @@ func main() {
 	creaturesInOrder = addDragonDays(doubleYear.dragonYear, doubleYear.direction, creaturesInOrder)
 
 	printCreatures(creaturesInOrder, doubleYear, padToColumn, maxDaysLength)
-	// TODO Add optional logging of the parameters as they are computed.
 	// TODO Print full Klvanistic date next to the normal date
 	// TODO Documentation
-
-	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
+	// TODO Tests
 }
