@@ -105,11 +105,11 @@ func findMax[T any](s []T, def T, getSize func(T) int) T {
 }
 
 func pad(maxLength int, l int, padChar string) string {
-	// We must consider the apparent length of the string, so we count the
-	// number of runes, not the number of bytes.
 	return strings.Repeat(padChar, maxLength-l)
 }
 
+// We must consider the apparent length of the string, so we count the
+// number of runes, not the number of bytes.
 func strLen(s string) int {
 	return utf8.RuneCountInString(s)
 }
