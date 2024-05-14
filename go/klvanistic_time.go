@@ -54,7 +54,6 @@ func getYearDigits(doubleyear int) []int {
 }
 
 var saveToFile = true
-var file = "../Zverala2.txt" // TODO Change for the appropriate file.
 var referenceTime kYear = kYear{
 	doubleyear:       27073,
 	doubleyearDigits: []int{2, 7, 0, 7, 3},
@@ -68,6 +67,16 @@ type doubleYear struct {
 	inKyear  kYear
 	endTime  time.Time
 	length   int
+}
+
+func (dy *doubleYear) toCache() string {
+	return fmt.Sprintf("%d:%d:%d:%d:%d\n",
+		dy.outKyear.doubleyear,
+		dy.outKyear.normalYearStart.Year(),
+		dy.outKyear.normalYearStart.Day(),
+		dy.inKyear.normalYearStart.Day(),
+		dy.endTime.Day(),
+	)
 }
 
 func getYearNumber(digits []*numWithIndex) int {

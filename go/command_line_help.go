@@ -113,8 +113,29 @@ func requestYearInfo() (doubleYear, kYear) {
 	printInfo("")
 
 	year := readOption("Začátek dvojroku (rok, ve kterém je první zimní slunovrat kroku): ")
-	sol1 := readSolstice(year)
-	sol2 := readSolstice(year + 1)
+
+	sol1, sol2, sol3, found := cachedYear(year)
+	if found {
+		var kyear kYear
+		outKyear := computeKyear(sol1, sol2)
+		inKyear := computeKyear(sol2, sol3)
+
+		if sol2.Year() > year {
+			kyear = outKyear
+		} else {
+			kyear = inKyear
+		}
+
+		return doubleYear{
+			outKyear: outKyear,
+			inKyear:  inKyear,
+			endTime:  sol3,
+			length:   outKyear.length + inKyear.length,
+		}, kyear
+	}
+
+	sol1 = readSolstice(year)
+	sol2 = readSolstice(year + 1)
 	kYear := computeKyear(sol1, sol2)
 
 	switch kYear.direction {
@@ -157,40 +178,6 @@ func printHelp() {
 	printInfo("-h --help     ... Zobrazit tento text")
 	printInfo("--debug       ... Tisknout extra informace")
 	printInfo("--debug-debug ... Tisknout extra EXTRA informace")
-}
-
-func readYearFromFile(doubleYear kYear) (yearDetail string, success bool) {
-	printDebug("Otevírám soubor %s", file)
-	f, err := os.Open(file)
-	handleError(err)
-	defer f.Close()
-	file := bufio.NewScanner(f)
-
-	var noEnd = true
-	for noEnd {
-		noEnd = file.Scan()
-		handleError(file.Err())
-
-		line := file.Text()
-
-		printDebug("Porovnávám s uloženým krokem %s", doubleYear.toReadableString())
-		if line == doubleYear.toReadableString() {
-			printDebug("Našel jsem shodu v krocích")
-			for noEnd {
-				yearDetail += fmt.Sprintf("\n%s", line)
-				noEnd = file.Scan()
-				handleError(file.Err())
-				line = file.Text()
-				if line == "" || !noEnd {
-					return yearDetail, true
-				}
-			}
-			return "", false
-		}
-	}
-
-	printDebug("Krok není uložen v souboru")
-	return "", false
 }
 
 // printCreatures prints creatures with their day ranges in both normal and

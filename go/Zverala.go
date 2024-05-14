@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"os"
 	"sort"
 )
 
@@ -346,31 +345,26 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 
 func main() {
 	parseArgs()
-	doubleYear, kYear := requestYearInfo()
-	printDebug("Zpracovávám krok %s", kYear.toReadableString())
-
-	if detail, yearKnown := readYearFromFile(kYear); yearKnown {
-		fmt.Printf("%s\n", detail)
-		os.Exit(0)
-	}
+	doubleYear, kyear := requestYearInfo()
+	printDebug("Zpracovávám krok %s", kyear.toReadableString())
 
 	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
 
-	dragonYear := isDragonYear(kYear)
-	kYear.dragonYear = dragonYear
+	dragonYear := isDragonYear(kyear)
+	kyear.dragonYear = dragonYear
 	if dragonYear {
 		printDebug("Letos je krok draků")
 		// If this is a dragon year, then we must not consider the days that are
 		// reserved for the dragons.
-		kYear.length -= NUM_DRAGONS
+		kyear.length -= NUM_DRAGONS
 	}
 
 	printDebug("Propočítávám pohybové zákony")
-	a := calculate_a(kYear.doubleyear)
+	a := calculate_a(kyear.doubleyear)
 	printDebug("Parametr a: %d", a)
-	b := calculate_b(kYear.doubleyearDigits, kYear.direction == OUT)
+	b := calculate_b(kyear.doubleyearDigits, kyear.direction == OUT)
 	printDebug("Parametr b: %d", b)
-	c := calculate_c(kYear.doubleyear, kYear.doubleyearDigits)
+	c := calculate_c(kyear.doubleyear, kyear.doubleyearDigits)
 	printDebug("Parametr c: %d", c)
 
 	sins := getSins(a)
@@ -379,12 +373,12 @@ func main() {
 	var (
 		orderedSteps          = getOrderedSteps(a, b, c, sins, cosins)
 		totalSteps            = sumFloatSlice(orderedSteps)
-		days                  = stepsToDays(orderedSteps, float64(kYear.length), totalSteps)
+		days                  = stepsToDays(orderedSteps, float64(kyear.length), totalSteps)
 		daysSum               = sumIntSlice(days)
 		longestCreatureName   = findMax(Creatures, Creatures[0], func(c CreatureName) int { return len(c) })
 		maxCreatureNameLength = len(longestCreatureName)
 		maxDays               = findMax(days, 0, func(x int) int { return x })
-		chimeraDays           = kYear.length - daysSum
+		chimeraDays           = kyear.length - daysSum
 		padToColumn           = maxCreatureNameLength + 3
 		maxDaysLength         = daysDigits(maxDays) + 1
 	)
@@ -392,11 +386,13 @@ func main() {
 	printDebug("Nejdelší jméno bytosti: %d (%s)", maxCreatureNameLength, longestCreatureName)
 	printDebug("Nejdleší počet dní (v cifrách): %d", maxDaysLength)
 
-	creaturesInOrder := getCreaturesInOrder(kYear.direction, chimeraDays, days)
-	creaturesInOrder = addDragonDays(kYear.dragonYear, kYear.direction, creaturesInOrder)
+	creaturesInOrder := getCreaturesInOrder(kyear.direction, chimeraDays, days)
+	creaturesInOrder = addDragonDays(kyear.dragonYear, kyear.direction, creaturesInOrder)
 
-	printCreatures(creaturesInOrder, doubleYear, kYear, padToColumn, maxDaysLength)
-	// TODO Write output to file
+	printCreatures(creaturesInOrder, doubleYear, kyear, padToColumn, maxDaysLength)
+
+	writeYearToFile(doubleYear)
+	// TODO I am not convinced the Klvanistic dates are correct.
 	// TODO Tests
 	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
 }
