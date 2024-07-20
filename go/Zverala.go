@@ -292,7 +292,7 @@ func getCreaturesInOrder(direction dirType, chimeraDays int, days []int) []Creat
 		for i := NUM_CREATURES - 1; i >= 0; i-- {
 			creatures = append(creatures, Creature{
 				name: Creatures[i],
-				days: days[i],
+				days: days[len(days)-i-1],
 			})
 		}
 	}
@@ -392,7 +392,13 @@ func main() {
 	printCreatures(creaturesInOrder, doubleYear, kyear, padToColumn, maxDaysLength)
 
 	writeYearToFile(doubleYear)
-	// TODO I am not convinced the Klvanistic dates are correct.
+	// TODO Don't require the user to know which day is the first of the
+	// doubleyear when inputting the aruments
+
+	// TODO The -n option doesn't work.
+	// TODO Cached years are re-cached
 	// TODO Tests
 	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
+	// TODO check documentation. It's outdated in places
+	// TODO English in the Czech text
 }

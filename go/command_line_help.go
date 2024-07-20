@@ -104,7 +104,7 @@ func requestYearInfo() (doubleYear, kYear) {
 
 	readSolstice := func(year int) time.Time {
 		sol := readOption(fmt.Sprintf("Zimni slunovrat roku %d (den v prosinci): ", year))
-		return time.Date(year, 12, sol, 12, 0, 0, 0, time.Local)
+		return time.Date(year, 12, sol, 11, 0, 0, 0, time.UTC)
 	}
 
 	printInfo("Martinismus počítá čas ve dvojrocích. Dvojrok začíná o zimního slunovratu a nesedí tudíž přesně na standardní dataci.")
@@ -206,9 +206,12 @@ func printCreatures(creatures []Creature, doubleYear doubleYear, kYear kYear, pa
 		}
 
 		first := currentDayRoller
-		// Add days-1, because the last day belongs to the next creature.
+		// Add days-1, because the last day belongs to the next creature, unless
+		// this is the last creature of the kyear, which is not followed by
+		// anything.
 		currentDayRoller = currentDayRoller.AddDate(0, 0, days-1)
 		last := currentDayRoller
+
 		// Now add the remaining 1 so the next creature starts on their day.
 		currentDayRoller = currentDayRoller.AddDate(0, 0, 1)
 

@@ -283,13 +283,9 @@ func (kd *kDate) toString() string {
 	}
 
 	if kd.sun > NUM_SUNS {
-		// TODO The document claims that there can only be 7-9 dargon days, but
-		// counting reveals there could be more. Did we do research on this, or
-		// is it a mistake?
-
-		nonDragonDays := kd.doubleYear.length - NUM_SUNS*SUN_LENGTH
+		dragonDays := kd.doubleYear.length - NUM_SUNS*SUN_LENGTH
 		var startPlanetIndex int
-		switch nonDragonDays {
+		switch dragonDays {
 		case 7:
 			startPlanetIndex = 2
 		case 8:
@@ -297,8 +293,14 @@ func (kd *kDate) toString() string {
 		case 9:
 			startPlanetIndex = 0
 		default:
-			handleError(fmt.Errorf("Invalidní počet dní planet: %d", nonDragonDays))
+			handleError(fmt.Errorf("Invalidní počet dní planet: %d", dragonDays))
 		}
+
+		printDEBUG("Starting index for planets is %d for planet day %d of %d (out of %d)",
+			startPlanetIndex,
+			kd.day,
+			dragonDays,
+			kd.doubleYear.length)
 
 		planet := Planets[startPlanetIndex+int(kd.day)-1]
 		return fmt.Sprintf("krok %d %c, %-34s",
@@ -333,33 +335,67 @@ const VYK_LENGTH = 6
 const NUM_SUNS = 7
 
 // timeToKlvanisticDate transforms a specific time into a klvanistic date.
-//
-// doubleYearStart and doubleYearEnd are the timestamps of winter solstices at
-// the ends of the doubleyear. Note that they must be two years apart - they
-// denote a doubleyear, not a kyear. MidPoint is the noon on the winter solstice
-// in the middle of the doubleyear.
-//
-// Date must occur between doubleYearStart and doubleYearEnd. It must point to
-// midnight on that day.
 func timeToKlvanisticDate(date time.Time, doubleYear doubleYear) kDate {
 	midPoint := doubleYear.inKyear.normalYearStart
-	daysFromStart := int(date.Sub(doubleYear.outKyear.normalYearStart).Hours() / 24)
+	// Here we do +1 because the distance between 21st December and the same day
+	// should be taken as 1. That way were actually counting the index of the
+	// day from 1.
+	daysFromStart := int(date.Sub(doubleYear.outKyear.normalYearStart).Hours()/24) + 1
 
-	printDEBUG("Hledám datum %d ve dvojroku %d, který má %d dní. Datum je %d dní od začátku.",
+	printDEBUG("Hledám datum %s ve dvojroku %d, který má %d dní. Datum je %d dní od začátku.",
 		date.Format("2.1. 2006"),
 		doubleYear.inKyear.doubleyear,
 		doubleYear.length,
 		daysFromStart)
 
-	suns := daysFromStart/SUN_LENGTH + 1
-	daysInSun := daysFromStart%SUN_LENGTH + 1
+	var suns, daysInSun, vyks, daysInVyk int
 
-	// Always subtract 1 from daysInSun, because all suns start with a zero day.
-	vyks := (daysInSun - 1) / VYK_LENGTH
-	daysInVyk := (daysInSun - 1) % VYK_LENGTH
-	if daysInVyk == 0 {
-		daysInVyk = VYK_LENGTH
+	// Counting the suns is a bit tricky. If date is on the same day as the
+	// doubleyear's start (AKA daysFromStart == 0), then suns = 1. If not, we
+	// can't just divide. For any number of days with a remainder of 0, dividing
+	// and adding 1 would work, but if the remainder is 0, then we mustn't add
+	// the 1.
+	//
+	// Imagine a SUN which is 2 days long. Here are the options:
+	//  - 0 days from start of the doubleyear: SUN == 1
+	//  - 1 day from the start:                SUN == 1
+	//  - 2 days from the start:               SUN == 1
+	//  - 3 days from the start:               SUN == 2
+	//  - 4 days from the start:               SUN == 2
+	//
+	// This isn't a straighforward mathematical operation. The 0 case must be
+	// checked separately, and then we can subtract 1 from the days, divide, and
+	// add one.
+	//
+	// AKA: if (days == 0) -> sun = 1
+	//      else           -> sun = (days - 1) / SUN_LENGTH  + 1
+	//
+	// Days in the sun are easier. We can take the remainder after dividing by
+	// SUN_LENGTH. However, if the remainder is 0, then days of the sun are
+	// equal to the length of the sun.
+	if daysFromStart == 0 {
+		suns = 1
+		daysInSun = 1
+	} else {
+		suns = (daysFromStart-1)/SUN_LENGTH + 1
+		daysInSun = daysFromStart % SUN_LENGTH
+		if daysInSun == 0 {
+			daysInSun = SUN_LENGTH
+		}
 	}
+
+	if daysInSun == 1 {
+		vyks = 0
+		daysInVyk = 0
+	} else {
+		// Minus 1 for zero day, minus another 1 as explained above.
+		vyks = (daysInSun-2)/VYK_LENGTH + 1
+		daysInVyk = (daysInSun - 1) % VYK_LENGTH
+		if daysInVyk == 0 {
+			daysInVyk = VYK_LENGTH
+		}
+	}
+
 	printDEBUG("Sluncí: %d, dní ve slunci: %d, výků: %d, dní ve výku: %d", suns, daysInSun, vyks, daysInVyk)
 
 	if suns == NUM_SUNS+1 {
@@ -372,10 +408,10 @@ func timeToKlvanisticDate(date time.Time, doubleYear doubleYear) kDate {
 	}
 
 	var dir dirType
-	if date.After(midPoint) {
-		dir = IN
-	} else {
+	if date.Before(midPoint) {
 		dir = OUT
+	} else {
+		dir = IN
 	}
 
 	return kDate{
