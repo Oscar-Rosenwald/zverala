@@ -85,7 +85,7 @@ func parseArgs() {
 
 // requestYearInfo prompts for and reads from stdin information about the kyear
 // in question.
-func requestYearInfo() (doubleYear, kYear) {
+func requestYearInfo() (doubleYear, kYear, bool) {
 	stdinReader := bufio.NewReader(os.Stdin)
 
 	readOption := func(prompt string) int {
@@ -112,7 +112,7 @@ func requestYearInfo() (doubleYear, kYear) {
 	printInfo("Tento program není schopen určit datum slunovratu. Připravte se prosím ho zadat.")
 	printInfo("")
 
-	year := readOption("Začátek dvojroku (rok, ve kterém je první zimní slunovrat kroku): ")
+	year := readOption("Rok prvního slunovratu: ")
 
 	sol1, sol2, sol3, found := cachedYear(year)
 	if found {
@@ -131,7 +131,7 @@ func requestYearInfo() (doubleYear, kYear) {
 			inKyear:  inKyear,
 			endTime:  sol3,
 			length:   outKyear.length + inKyear.length,
-		}, kyear
+		}, kyear, found
 	}
 
 	sol1 = readSolstice(year)
@@ -149,7 +149,7 @@ func requestYearInfo() (doubleYear, kYear) {
 			inKyear:  inKyear,
 			endTime:  endSol,
 			length:   kYear.length + inKyear.length,
-		}, kYear
+		}, kYear, found
 	case IN:
 		printInfo("Krok v zadaném rozmezí je soustředný. Nyní potřebuji informace o předchozím kroku.")
 		startSol := readSolstice(year - 1)
@@ -160,12 +160,12 @@ func requestYearInfo() (doubleYear, kYear) {
 			inKyear:  kYear,
 			endTime:  sol2,
 			length:   outKyear.length + kYear.length,
-		}, kYear
+		}, kYear, found
 	}
 
 	printDebug("Spracovávám krok %s", kYear.toReadableString())
 	handleError(fmt.Errorf("Cannot compute doubleyear with direction %c", kYear.direction.toChar()))
-	return doubleYear{}, kYear
+	return doubleYear{}, kYear, found
 }
 
 // Asks for current year and the winter solstices

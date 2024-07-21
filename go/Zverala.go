@@ -345,7 +345,7 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 
 func main() {
 	parseArgs()
-	doubleYear, kyear := requestYearInfo()
+	doubleYear, kyear, yearCached := requestYearInfo()
 	printDebug("Zpracovávám krok %s", kyear.toReadableString())
 
 	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
@@ -391,12 +391,9 @@ func main() {
 
 	printCreatures(creaturesInOrder, doubleYear, kyear, padToColumn, maxDaysLength)
 
-	writeYearToFile(doubleYear)
-	// TODO Don't require the user to know which day is the first of the
-	// doubleyear when inputting the aruments
-
-	// TODO The -n option doesn't work.
-	// TODO Cached years are re-cached
+	if !yearCached {
+		writeYearToFile(doubleYear)
+	}
 	// TODO Tests
 	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
 	// TODO check documentation. It's outdated in places

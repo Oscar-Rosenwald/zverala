@@ -12,6 +12,10 @@ import (
 var file = "/Users/cyrilsaroch/Documents/Martinismus/Zvěrála/Zverala2.txt"
 
 func writeYearToFile(year doubleYear) {
+	if !saveToFile {
+		return
+	}
+
 	printDebug("Otevírám soubor %s", file)
 
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0)
@@ -27,6 +31,10 @@ func writeYearToFile(year doubleYear) {
 }
 
 func cachedYear(year int) (sol1, sol2, sol3 time.Time, found bool) {
+	if !saveToFile {
+		return time.Time{}, time.Time{}, time.Time{}, false
+	}
+
 	printDebug("Otevírám soubor %s", file)
 
 	f, err := os.Open(file)
