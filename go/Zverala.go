@@ -16,7 +16,7 @@ func calculate_b(doubleyearDigits []int, isOutward bool) int {
 	// return 1. If the result is < 0, return 9. Otherwise return result.
 	add := func(num, thing int) int {
 		num += thing
-		if num < 0 {
+		if num <= 0 {
 			num = 9
 		}
 		if num > 9 {
@@ -121,9 +121,9 @@ func getCosins(b, c int) []float64 {
 	//
 	// HOWEVER!!!!
 	//
-	// This is only applicable til A < 1, because sin^-1 fails after that.
-	// We need to know how many k's there can be, only do those, and then
-	// add the cosine period to each of the results.
+	// This is only applicable till A < 1, because sin^-1 fails after that. We
+	// need to know how many k's there can be, only do those, and then add the
+	// cosine period to each of the results.
 	//
 	// Then there is the period. The period of
 	//     sin(a*x)
@@ -201,10 +201,9 @@ func getCosins(b, c int) []float64 {
 }
 
 // getOrderedSteps composes a list of ordered floats where each float
-// corresponds to a length of Lysak's jump. a, b, and c are parameters
-// calculated by calculate_a etc. Sins and cosins must both be of length
-// NUM_CREATURES and be ordered. The result has length NUM_CREATURES.
-func getOrderedSteps(a, b, c int, sins, cosins []float64) []float64 {
+// corresponds to a length of Lysak's jump. Sins and cosins must both be of
+// length NUM_CREATURES and be ordered. The result has length NUM_CREATURES - 1.
+func getOrderedSteps(sins, cosins []float64) []float64 {
 	printDebug("Počítám déklů Lysákových skoků")
 	results := []float64{}
 	prev := float64(0)
@@ -371,7 +370,7 @@ func main() {
 	cosins := getCosins(b, c)
 
 	var (
-		orderedSteps          = getOrderedSteps(a, b, c, sins, cosins)
+		orderedSteps          = getOrderedSteps(sins, cosins)
 		totalSteps            = sumFloatSlice(orderedSteps)
 		days                  = stepsToDays(orderedSteps, float64(kyear.length), totalSteps)
 		daysSum               = sumIntSlice(days)
@@ -394,7 +393,7 @@ func main() {
 	if !yearCached {
 		writeYearToFile(doubleYear)
 	}
-	// TODO Tests
+	// TODO Eror 'Invalidní počet dní planet: 11' na řádku 296 (input days were 21,22,21)
 	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
 	// TODO check documentation. It's outdated in places
 	// TODO English in the Czech text

@@ -61,8 +61,7 @@ var Dragons = []Dragon{
 var DragonsAfterCreatureIndex = []int{0, 2, 5, 8, 14, 18, 23, 29}
 
 var (
-	Chimera           = Creatures[0]
-	NUM_CREATURES     = len(Creatures)
-	NUM_DRAGONS       = len(Dragons)
-	DragonsAfterIndex = []int{0, 2, 5, 8, 14, 18, 23, 29}
+	Chimera       = Creatures[0]
+	NUM_CREATURES = len(Creatures)
+	NUM_DRAGONS   = len(Dragons)
 )
