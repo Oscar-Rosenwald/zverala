@@ -12,8 +12,8 @@ import (
 
 func handleError(err error) {
 	if err != nil {
-		_, _, no, _ := runtime.Caller(1)
-		fmt.Printf("Eror '%s' na řádku %d\n", err, no)
+		_, f, no, _ := runtime.Caller(1)
+		fmt.Printf("Eror '%s' na řádku %s:%d\n", err, f, no)
 		os.Exit(1)
 	}
 }

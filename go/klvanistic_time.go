@@ -79,6 +79,12 @@ func (dy *doubleYear) toCache() string {
 	)
 }
 
+func (dy *doubleYear) toString() string {
+	start := dy.outKyear.normalYearStart
+	end := dy.endTime
+	return fmt.Sprintf("Dvojrok %d.%d. %d - %d.%d. %d (%d dní)", start.Day(), start.Month(), start.Year(), end.Day(), end.Month(), end.Year(), dy.length)
+}
+
 func getYearNumber(digits []*numWithIndex) int {
 	var ret = 0
 	var reverse []numWithIndex
@@ -141,7 +147,7 @@ func computeKyear(yearStart, yearEnd time.Time) kYear {
 // isDragonYear reports whether the doubleyear of which kyear is part contains
 // dragons.
 func isDragonYear(kyear kYear) bool {
-	printDebug("Je to krok draga?")
+	printDebug("Je to krok draka?")
 	dragonDigit := kyear.doubleyearDigits[len(kyear.doubleyearDigits)-1]
 	var (
 		dragonNum_3 = 3

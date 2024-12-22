@@ -83,7 +83,11 @@ func calculate_c(doubleyear int, doubleyearDigits []int) int {
 		}
 	}
 
-	printDEBUG("Cifry kroku podle velikosti: %+v", digits)
+	var digitNums []numWithIndex
+	for _, dig := range digits {
+		digitNums = append(digitNums, *dig)
+	}
+	printDEBUG("Cifry kroku podle velikosti: %+v", digitNums)
 	bigIndex := getYearNumber(digits)
 	printDebug("Velký index: %d", bigIndex)
 	coefficient := bigIndex * doubleyear
@@ -345,14 +349,15 @@ func addDragonDays(dragonYear bool, direction dirType, creatures []Creature) []C
 func main() {
 	parseArgs()
 	doubleYear, kyear, yearCached := requestYearInfo()
-	printDebug("Zpracovávám krok %s", kyear.toReadableString())
+	printDebug("Zpracovávám krok %s a dvojrok %s", kyear.toReadableString(), doubleYear.toString())
+	printDEBUG("Zpracovávám krok %s a dvojrok %s", kyear.toString(), doubleYear.toString())
 
 	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
 
 	dragonYear := isDragonYear(kyear)
 	kyear.dragonYear = dragonYear
 	if dragonYear {
-		printDebug("Letos je krok draků")
+		printDebug("%d je krok draků", kyear.normalYearStart.Year())
 		// If this is a dragon year, then we must not consider the days that are
 		// reserved for the dragons.
 		kyear.length -= NUM_DRAGONS
