@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"errors"
+	"io/fs"
 	"os"
 	"strconv"
 	"strings"
@@ -9,13 +11,15 @@ import (
 )
 
 // TODO Change for the appropriate file. Make it a relative path, possibly configurable by the user.
-var file = "/Users/cyrilsaroch/Documents/Martinismus/Zvěrála/Zverala2.txt"
+var file = "/Users/cyrilsaroch/Documents/Martinismus/Zverala/Zverala2.txt"
 
 func writeYearToFile(year doubleYear) {
 	if !saveToFile {
 		return
 	}
 
+	// Even if the file didn't exist when we called the app, cachedYear created
+	// it, so it's safe now to open it without checking.
 	printDebug("Otevírám soubor %s", file)
 
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0)
@@ -35,9 +39,17 @@ func cachedYear(year int) (sol1, sol2, sol3 time.Time, found bool) {
 		return time.Time{}, time.Time{}, time.Time{}, false
 	}
 
-	printDebug("Otevírám soubor %s", file)
+	var f *os.File
 
-	f, err := os.Open(file)
+	_, err := os.Stat(file)
+	if err == nil {
+		printDebug("Otevírám soubor %s", file)
+		f, err = os.Open(file)
+	} else if errors.Is(err, fs.ErrNotExist) {
+		printDebug("Vytvářím soubor %s", file)
+		f, err = os.Create(file)
+	}
+
 	handleError(err)
 	defer f.Close()
 
