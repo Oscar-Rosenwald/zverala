@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	ktime "zverala/klvanistic_time"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,48 +19,48 @@ func TestComposeKyear(t *testing.T) {
 		start time.Time
 		end   time.Time
 		// Expected results
-		doubleYear       int
-		doubleYearDigits []int
-		direction        dirType
-		length           int
+		DoubleYear       int
+		DoubleYearDigits []int
+		Direction        ktime.DirType
+		Length           int
 	}{
 		{
 			start: time.Date(2013, 12, 21, 11, 0, 0, 0, time.UTC),
 			end:   time.Date(2014, 12, 21, 11, 0, 0, 0, time.UTC),
 
-			doubleYear:       27073,
-			doubleYearDigits: []int{2, 7, 0, 7, 3},
-			direction:        OUT,
-			length:           365,
+			DoubleYear:       27073,
+			DoubleYearDigits: []int{2, 7, 0, 7, 3},
+			Direction:        ktime.OUT,
+			Length:           365,
 		},
 		{
 			start: time.Date(2014, 12, 21, 11, 0, 0, 0, time.UTC),
 			end:   time.Date(2015, 12, 22, 11, 0, 0, 0, time.UTC),
 
-			doubleYear:       27073,
-			doubleYearDigits: []int{2, 7, 0, 7, 3},
-			direction:        IN,
-			length:           366,
+			DoubleYear:       27073,
+			DoubleYearDigits: []int{2, 7, 0, 7, 3},
+			Direction:        ktime.IN,
+			Length:           366,
 		},
 		{
 			start: time.Date(2015, 12, 22, 11, 0, 0, 0, time.UTC),
 			end:   time.Date(2016, 12, 21, 11, 0, 0, 0, time.UTC),
 
-			doubleYear:       27074,
-			doubleYearDigits: []int{2, 7, 0, 7, 4},
-			direction:        OUT,
-			length:           365,
+			DoubleYear:       27074,
+			DoubleYearDigits: []int{2, 7, 0, 7, 4},
+			Direction:        ktime.OUT,
+			Length:           365,
 		},
 	} {
 		t.Run(fmt.Sprintf("year_%d", item.start.Year()), func(t *testing.T) {
-			kyear := computeKyear(item.start, item.end)
-			require.Equal(t, item.doubleYear, kyear.doubleyear)
-			require.Equal(t, item.direction, kyear.direction)
-			require.Equal(t, item.length, kyear.length)
-			require.True(t, item.start.Equal(kyear.normalYearStart))
-			require.Len(t, kyear.doubleyearDigits, len(item.doubleYearDigits))
-			for i, dig := range kyear.doubleyearDigits {
-				require.Equal(t, item.doubleYearDigits[i], dig)
+			kyear := ktime.ComputeKyear(item.start, item.end)
+			require.Equal(t, item.DoubleYear, kyear.Doubleyear)
+			require.Equal(t, item.Direction, kyear.Direction)
+			require.Equal(t, item.Length, kyear.Length)
+			require.True(t, item.start.Equal(kyear.NormalYearStart))
+			require.Len(t, kyear.DoubleyearDigits, len(item.DoubleYearDigits))
+			for i, dig := range kyear.DoubleyearDigits {
+				require.Equal(t, item.DoubleYearDigits[i], dig)
 			}
 		})
 	}
@@ -102,8 +104,8 @@ func TestOrderedCreatures(t *testing.T) {
 		days = append(days, i+1)
 	}
 
-	t.Run("OUT", func(t *testing.T) {
-		creatures := getCreaturesInOrder(OUT, 0, days)
+	t.Run("ktime.OUT", func(t *testing.T) {
+		creatures := getCreaturesInOrder(ktime.OUT, 0, days)
 		for i, creature := range creatures {
 			expectedName := Creatures[i]
 			require.Equal(t, expectedName, creature.name)
@@ -111,7 +113,7 @@ func TestOrderedCreatures(t *testing.T) {
 		}
 
 		t.Run("dragon_days", func(t *testing.T) {
-			creatures = addDragonDays(true, OUT, creatures)
+			creatures = addDragonDays(true, ktime.OUT, creatures)
 			for i, creatureIndex := range DragonsAfterCreatureIndex {
 				creature := creatures[creatureIndex+1+i]
 				require.Equal(t, Dragons[i].name, creature.name)
@@ -121,8 +123,8 @@ func TestOrderedCreatures(t *testing.T) {
 
 	})
 
-	t.Run("IN", func(t *testing.T) {
-		creatures := getCreaturesInOrder(IN, 0, days)
+	t.Run("ktime.IN", func(t *testing.T) {
+		creatures := getCreaturesInOrder(ktime.IN, 0, days)
 		for i, creature := range creatures {
 			expectName := Creatures[NUM_CREATURES-1-i]
 			require.Equal(t, expectName, creature.name)
@@ -134,12 +136,12 @@ func TestOrderedCreatures(t *testing.T) {
 		}
 
 		t.Run("dragon_days", func(t *testing.T) {
-			creatures = addDragonDays(true, IN, creatures)
+			creatures = addDragonDays(true, ktime.IN, creatures)
 			for i, creatureIndex := range DragonsAfterCreatureIndex {
 				// I appreciate this is quite difficult to reason about.
 				// Basically we're doing this:
 				//
-				//  - Get the total length of the new creatures array ->
+				//  - Get the total Length of the new creatures array ->
 				//    NUM_CREATURES + NUM_DRAGONS
 				//
 				//  - For each index in the DragonsAfterCreatureIndex, count
@@ -165,23 +167,23 @@ func TestDragonYear(t *testing.T) {
 		isDragonYear bool
 	}{
 		{
-			kYear: computeKyear(time.Date(2013, 12, 21, 0, 0, 0, 0, time.UTC),
+			kYear: ktime.ComputeKyear(time.Date(2013, 12, 21, 0, 0, 0, 0, time.UTC),
 				time.Date(2014, 12, 21, 0, 0, 0, 0, time.UTC)),
 			isDragonYear: false,
 		},
 		{
-			kYear: computeKyear(time.Date(2012, 12, 21, 0, 0, 0, 0, time.UTC),
+			kYear: ktime.ComputeKyear(time.Date(2012, 12, 21, 0, 0, 0, 0, time.UTC),
 				time.Date(2013, 12, 21, 0, 0, 0, 0, time.UTC)),
 			isDragonYear: true,
 		},
 		{
-			kYear: computeKyear(time.Date(2048, 12, 22, 0, 0, 0, 0, time.UTC),
+			kYear: ktime.ComputeKyear(time.Date(2048, 12, 22, 0, 0, 0, 0, time.UTC),
 				time.Date(2049, 12, 21, 0, 0, 0, 0, time.UTC)),
 			isDragonYear: true,
 		},
 	} {
-		t.Run(fmt.Sprintf("checking_kyear_%s", item.kYear.toReadableString()), func(t *testing.T) {
-			is := isDragonYear(item.kYear)
+		t.Run(fmt.Sprintf("checking_kyear_%s", item.kYear.ToReadableString()), func(t *testing.T) {
+			is := ktime.IsDragonYear(item.kYear)
 			require.Equal(t, item.isDragonYear, is)
 		})
 	}
@@ -198,10 +200,10 @@ func TestFileManipulation(t *testing.T) {
 	file = tmpFile.Name()
 	defer os.RemoveAll("/tmp/" + tmpFile.Name())
 
-	dYear := doubleYear{
-		outKyear: computeKyear(sol1In, sol2In),
-		inKyear:  computeKyear(sol2In, sol3In),
-		endTime:  sol3In,
+	dYear := ktime.DoubleYear{
+		OutKyear: ktime.ComputeKyear(sol1In, sol2In),
+		InKyear:  ktime.ComputeKyear(sol2In, sol3In),
+		EndTime:  sol3In,
 	}
 	writeYearToFile(dYear)
 
@@ -270,18 +272,18 @@ func TestCalculateABC(t *testing.T) {
 
 	t.Run("calculate_c", func(t *testing.T) {
 		for _, item := range []struct {
-			doubleYear int
+			DoubleYear int
 			digits     []int
 			output     int
 		}{
 			{
-				doubleYear: 27076,
+				DoubleYear: 27076,
 				digits:     []int{2, 7, 0, 7, 6},
 				output:     7,
 			},
 		} {
-			t.Run(fmt.Sprintf("year_%d", item.doubleYear), func(t *testing.T) {
-				out := calculate_c(item.doubleYear, item.digits)
+			t.Run(fmt.Sprintf("year_%d", item.DoubleYear), func(t *testing.T) {
+				out := calculate_c(item.DoubleYear, item.digits)
 				require.Equal(t, item.output, out)
 			})
 		}

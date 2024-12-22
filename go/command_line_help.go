@@ -8,45 +8,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	ktime "zverala/klvanistic_time"
+	"zverala/utils"
 )
 
-// Print helpful debug logs.
-var Debug = false
-
-// Print unhelpful debug logs.
-var DebugDebug = false
-
-func printDebug(msg string, args ...interface{}) {
-	if !Debug {
-		return
-	}
-
-	if len(args) > 0 {
-		fmt.Printf(msg+"\n", args...)
-	} else {
-		fmt.Printf("%s\n", msg)
-	}
-}
-
-func printDEBUG(msg string, args ...interface{}) {
-	if !DebugDebug {
-		return
-	}
-
-	if len(args) > 0 {
-		fmt.Printf(msg+"\n", args...)
-	} else {
-		fmt.Printf("%s\n", msg)
-	}
-}
-
-func printInfo(msg string, args ...interface{}) {
-	if len(args) > 0 {
-		fmt.Printf(msg+"\n", args...)
-	} else {
-		fmt.Printf("%s\n", msg)
-	}
-}
+var saveToFile bool = true
 
 // Handles command line argument
 func parseArgs() {
@@ -70,9 +36,9 @@ func parseArgs() {
 			}
 			file = args[i+1]
 		case "--debug":
-			Debug = true
+			utils.Debug = true
 		case "--debug-debug":
-			DebugDebug = true
+			utils.DebugDebug = true
 		default:
 			if arg != file {
 				fmt.Printf("Neznámý argument %s\n", arg)
@@ -91,14 +57,14 @@ func requestYearInfo() (doubleYear, kYear, bool) {
 	readOption := func(prompt string) int {
 		fmt.Print(prompt)
 		ret, err := stdinReader.ReadString('\n')
-		handleError(err)
+		utils.HandleError(err)
 
 		if strings.HasSuffix(ret, "\n") {
 			ret = ret[:len(ret)-1]
 		}
 
 		retConv, err := strconv.Atoi(ret)
-		handleError(err)
+		utils.HandleError(err)
 		return retConv
 	}
 
@@ -107,18 +73,18 @@ func requestYearInfo() (doubleYear, kYear, bool) {
 		return time.Date(year, 12, sol, 11, 0, 0, 0, time.UTC)
 	}
 
-	printInfo("Martinismus počítá čas ve dvojrocích. Dvojrok začíná o zimního slunovratu a nesedí tudíž přesně na standardní dataci.")
-	printInfo("")
-	printInfo("Tento program není schopen určit datum slunovratu. Připravte se prosím ho zadat.")
-	printInfo("")
+	utils.PrintInfo("Martinismus počítá čas ve dvojrocích. Dvojrok začíná o zimního slunovratu a nesedí tudíž přesně na standardní dataci.")
+	utils.PrintInfo("")
+	utils.PrintInfo("Tento program není schopen určit datum slunovratu. Připravte se prosím ho zadat.")
+	utils.PrintInfo("")
 
 	year := readOption("Rok prvního slunovratu: ")
 
 	sol1, sol2, sol3, found := cachedYear(year)
 	if found {
 		var kyear kYear
-		outKyear := computeKyear(sol1, sol2)
-		inKyear := computeKyear(sol2, sol3)
+		outKyear := ktime.ComputeKyear(sol1, sol2)
+		inKyear := ktime.ComputeKyear(sol2, sol3)
 
 		if sol2.Year() > year {
 			kyear = outKyear
@@ -127,74 +93,74 @@ func requestYearInfo() (doubleYear, kYear, bool) {
 		}
 
 		return doubleYear{
-			outKyear: outKyear,
-			inKyear:  inKyear,
-			endTime:  sol3,
-			length:   outKyear.length + inKyear.length,
+			OutKyear: outKyear,
+			InKyear:  inKyear,
+			EndTime:  sol3,
+			Length:   outKyear.Length + inKyear.Length,
 		}, kyear, found
 	}
 
 	sol1 = readSolstice(year)
 	sol2 = readSolstice(year + 1)
-	kYear := computeKyear(sol1, sol2)
+	kYear := ktime.ComputeKyear(sol1, sol2)
 
-	switch kYear.direction {
-	case OUT:
-		printInfo("Krok v zadaném rozmezí je odstředný. Nyní potřebuji informace o následujícím kroku.")
+	switch kYear.Direction {
+	case ktime.OUT:
+		utils.PrintInfo("Krok v zadaném rozmezí je odstředný. Nyní potřebuji informace o následujícím kroku.")
 		endSol := readSolstice(year + 2)
-		inKyear := computeKyear(sol2, endSol)
+		inKyear := ktime.ComputeKyear(sol2, endSol)
 
 		return doubleYear{
-			outKyear: kYear,
-			inKyear:  inKyear,
-			endTime:  endSol,
-			length:   kYear.length + inKyear.length,
+			OutKyear: kYear,
+			InKyear:  inKyear,
+			EndTime:  endSol,
+			Length:   kYear.Length + inKyear.Length,
 		}, kYear, found
-	case IN:
-		printInfo("Krok v zadaném rozmezí je soustředný. Nyní potřebuji informace o předchozím kroku.")
+	case ktime.IN:
+		utils.PrintInfo("Krok v zadaném rozmezí je soustředný. Nyní potřebuji informace o předchozím kroku.")
 		startSol := readSolstice(year - 1)
-		outKyear := computeKyear(startSol, sol1)
+		outKyear := ktime.ComputeKyear(startSol, sol1)
 
 		return doubleYear{
-			outKyear: outKyear,
-			inKyear:  kYear,
-			endTime:  sol2,
-			length:   outKyear.length + kYear.length,
+			OutKyear: outKyear,
+			InKyear:  kYear,
+			EndTime:  sol2,
+			Length:   outKyear.Length + kYear.Length,
 		}, kYear, found
 	}
 
-	printDebug("Spracovávám krok %s", kYear.toReadableString())
-	handleError(fmt.Errorf("Cannot compute doubleyear with direction %c", kYear.direction.toChar()))
+	utils.PrintDebug("Spracovávám krok %s", kYear.ToReadableString())
+	utils.HandleError(fmt.Errorf("Cannot compute doubleyear with direction %c", kYear.Direction.ToChar()))
 	return doubleYear{}, kYear, found
 }
 
 // Asks for current year and the winter solstices
 func printHelp() {
-	printInfo("Vypočítej současný klvanistický rok. Všechny potřebné údaje budou automaticky vyžádány.")
-	printInfo("Program může zapsat do souboru a tisknout na konzoli, nebo jen tisknout.")
-	printInfo("Pokud rok už v souboru je, pouze tiskni. Defaultní chování je tisk a zápis do Zverala.txt.")
-	printInfo("-n            ... Pouze tisknout, nezapisovat")
-	printInfo("-f <soubor>   ... Hledat v / zapsat do souboru")
-	printInfo("-h --help     ... Zobrazit tento text")
-	printInfo("--debug       ... Tisknout extra informace")
-	printInfo("--debug-debug ... Tisknout extra EXTRA informace")
+	utils.PrintInfo("Vypočítej současný klvanistický rok. Všechny potřebné údaje budou automaticky vyžádány.")
+	utils.PrintInfo("Program může zapsat do souboru a tisknout na konzoli, nebo jen tisknout.")
+	utils.PrintInfo("Pokud rok už v souboru je, pouze tiskni. Defaultní chování je tisk a zápis do Zverala.txt.")
+	utils.PrintInfo("-n            ... Pouze tisknout, nezapisovat")
+	utils.PrintInfo("-f <soubor>   ... Hledat v / zapsat do souboru")
+	utils.PrintInfo("-h --help     ... Zobrazit tento text")
+	utils.PrintInfo("--debug       ... Tisknout extra informace")
+	utils.PrintInfo("--debug-debug ... Tisknout extra EXTRA informace")
 }
 
 // printCreatures prints creatures with their day ranges in both normal and
 // Klvanistic calendars.
 func printCreatures(creatures []Creature, doubleYear doubleYear, kYear kYear, padToColumn, maxDaysLength int) {
-	printInfo("")
+	utils.PrintInfo("")
 	var (
-		currentDayRoller = kYear.normalYearStart
+		currentDayRoller = kYear.NormalYearStart
 		dateFormat       = "2.1. 2006"
 	)
 
 	for _, b := range creatures {
-		lenB := strLen(string(b.name))
-		dotPadB := pad(padToColumn, lenB, ".")
+		lenB := utils.StrLen(string(b.name))
+		dotPadB := utils.Pad(padToColumn, lenB, ".")
 		days := b.days
-		lenDays := daysDigits(days)
-		spacePad := pad(maxDaysLength, lenDays, " ")
+		lenDays := utils.DaysDigits(days)
+		spacePad := utils.Pad(maxDaysLength, lenDays, " ")
 
 		if days == 0 {
 			fmt.Printf("%s%s%d%sdnů\n",
@@ -215,19 +181,19 @@ func printCreatures(creatures []Creature, doubleYear doubleYear, kYear kYear, pa
 		// Now add the remaining 1 so the next creature starts on their day.
 		currentDayRoller = currentDayRoller.AddDate(0, 0, 1)
 
-		kStart := timeToKlvanisticDate(first, doubleYear)
-		kEnd := timeToKlvanisticDate(last, doubleYear)
+		kStart := ktime.TimeToKlvanisticDate(first, doubleYear)
+		kEnd := ktime.TimeToKlvanisticDate(last, doubleYear)
 
 		fmt.Printf("%s%s%d%s%s: % 11s - %-11s | %s - %-11s\n",
 			b.name,
 			dotPadB,
 			days,
 			spacePad,
-			dayString(days),
+			utils.DayString(days),
 			first.Format(dateFormat),
 			last.Format(dateFormat),
-			kStart.toString(),
-			kEnd.toString(),
+			kStart.ToString(),
+			kEnd.ToString(),
 		)
 	}
 

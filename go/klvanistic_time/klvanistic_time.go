@@ -1,21 +1,22 @@
 // -*- eval: (hs-minor-mode 1); -*-
-package main
+package klvanistic_time
 
 import (
 	"fmt"
 	"math"
 	"time"
+	"zverala/utils"
 )
 
-type char = byte
-type dirType string
+type Char = byte
+type DirType string
 
 const (
-	OUT dirType = "OUTWARD"
-	IN  dirType = "INWARD"
+	OUT DirType = "OUTWARD"
+	IN  DirType = "INWARD"
 )
 
-func (typ dirType) toChar() char {
+func (typ DirType) ToChar() Char {
 	switch typ {
 	case OUT:
 		return 'O'
@@ -24,83 +25,75 @@ func (typ dirType) toChar() char {
 	}
 	// Pass an error to hanldeError so we guarantee that the program is
 	// terminated here.
-	handleError(fmt.Errorf("Invalid K. year direction: '%s'", typ))
+	utils.HandleError(fmt.Errorf("Invalid K. year direction: '%s'", typ))
 	return ' '
 }
 
-type kYear struct {
-	doubleyear       int
-	doubleyearDigits []int
-	direction        dirType
-	normalYearStart  time.Time
-	dragonYear       bool
-	length           int
+type KYear struct {
+	Doubleyear       int
+	DoubleyearDigits []int
+	Direction        DirType
+	NormalYearStart  time.Time
+	DragonYear       bool
+	Length           int
 }
 
-func (k kYear) toString() string {
-	return fmt.Sprintf("%s - %d %s (dragons:%t) (%v) (length %d)\n", k.normalYearStart.String(), k.doubleyear, k.direction, k.dragonYear, k.doubleyearDigits, k.length)
+func (k KYear) ToString() string {
+	return fmt.Sprintf("%s - %d %s (dragons:%t) (%v) (length %d)\n", k.NormalYearStart.String(), k.Doubleyear, k.Direction, k.DragonYear, k.DoubleyearDigits, k.Length)
 }
 
-func (k kYear) toReadableString() string {
-	return fmt.Sprintf("Rok %d / %d %c - %d days", k.normalYearStart.Year()+1, k.doubleyear, k.direction.toChar(), k.length)
-}
-
-func getYearDigits(doubleyear int) []int {
-	digit := doubleyear % 10
-	if doubleyear < 10 {
-		return []int{digit}
-	}
-	return append(getYearDigits(doubleyear/10), digit)
+func (k KYear) ToReadableString() string {
+	return fmt.Sprintf("Rok %d / %d %c - %d days", k.NormalYearStart.Year()+1, k.Doubleyear, k.Direction.ToChar(), k.Length)
 }
 
 var saveToFile = true
-var referenceTime kYear = kYear{
-	doubleyear:       27073,
-	doubleyearDigits: []int{2, 7, 0, 7, 3},
-	normalYearStart:  time.Date(2013, 12, 21, 11, 0, 0, 0, time.UTC), // 12:00 in Prague
-	direction:        OUT,
-	dragonYear:       false,
+var referenceTime KYear = KYear{
+	Doubleyear:       27073,
+	DoubleyearDigits: []int{2, 7, 0, 7, 3},
+	NormalYearStart:  time.Date(2013, 12, 21, 11, 0, 0, 0, time.UTC), // 12:00 in Prague
+	Direction:        OUT,
+	DragonYear:       false,
 }
 
-type doubleYear struct {
-	outKyear kYear
-	inKyear  kYear
-	endTime  time.Time
-	length   int
+type DoubleYear struct {
+	OutKyear KYear
+	InKyear  KYear
+	EndTime  time.Time
+	Length   int
 }
 
-func (dy *doubleYear) toCache() string {
+func (dy *DoubleYear) ToCache() string {
 	return fmt.Sprintf("%d:%d:%d:%d:%d\n",
-		dy.outKyear.doubleyear,
-		dy.outKyear.normalYearStart.Year(),
-		dy.outKyear.normalYearStart.Day(),
-		dy.inKyear.normalYearStart.Day(),
-		dy.endTime.Day(),
+		dy.OutKyear.Doubleyear,
+		dy.OutKyear.NormalYearStart.Year(),
+		dy.OutKyear.NormalYearStart.Day(),
+		dy.InKyear.NormalYearStart.Day(),
+		dy.EndTime.Day(),
 	)
 }
 
-func (dy *doubleYear) toString() string {
-	start := dy.outKyear.normalYearStart
-	end := dy.endTime
-	return fmt.Sprintf("Dvojrok %d.%d. %d - %d.%d. %d (%d dní)", start.Day(), start.Month(), start.Year(), end.Day(), end.Month(), end.Year(), dy.length)
+func (dy *DoubleYear) ToString() string {
+	start := dy.OutKyear.NormalYearStart
+	end := dy.EndTime
+	return fmt.Sprintf("Dvojrok %d.%d. %d - %d.%d. %d (%d dní)", start.Day(), start.Month(), start.Year(), end.Day(), end.Month(), end.Year(), dy.Length)
 }
 
-func getYearNumber(digits []*numWithIndex) int {
+func GetYearNumber(digits []*utils.NumWithIndex) int {
 	var ret = 0
-	var reverse []numWithIndex
+	var reverse []utils.NumWithIndex
 
 	for _, d := range digits {
-		reverse = append([]numWithIndex{*d}, reverse...)
+		reverse = append([]utils.NumWithIndex{*d}, reverse...)
 	}
 
 	for i, d := range reverse {
-		ret += int(math.Pow(10, float64(i))) * d.index
+		ret += int(math.Pow(10, float64(i))) * d.Index
 	}
 
 	return ret
 }
 
-func getYearNumberFromSlice(digits []int) int {
+func GetYearNumberFromSlice(digits []int) int {
 	var ret = 0
 	var reverse []int
 
@@ -115,10 +108,10 @@ func getYearNumberFromSlice(digits []int) int {
 	return ret
 }
 
-// computeKyear returns the current kyear denoted by yearStart and yearEnd.
-func computeKyear(yearStart, yearEnd time.Time) kYear {
-	yearDiff := int(math.Abs(float64(yearStart.Year() - referenceTime.normalYearStart.Year())))
-	beforeReference := yearStart.Before(referenceTime.normalYearStart)
+// ComputeKyear returns the current kyear denoted by yearStart and yearEnd.
+func ComputeKyear(yearStart, yearEnd time.Time) KYear {
+	yearDiff := int(math.Abs(float64(yearStart.Year() - referenceTime.NormalYearStart.Year())))
+	beforeReference := yearStart.Before(referenceTime.NormalYearStart)
 	evenDiff := yearDiff%2 == 0
 
 	var dir = IN
@@ -131,39 +124,39 @@ func computeKyear(yearStart, yearEnd time.Time) kYear {
 		kyearDiff = (yearDiff + 1) / -2
 	}
 
-	doubleyear := referenceTime.doubleyear + kyearDiff
+	doubleyear := referenceTime.Doubleyear + kyearDiff
 
 	yearLength := int(math.Abs(float64(yearStart.Sub(yearEnd) / (time.Hour * 24))))
 
-	return kYear{
-		doubleyear:       doubleyear,
-		doubleyearDigits: getYearDigits(doubleyear),
-		direction:        dir,
-		normalYearStart:  yearStart,
-		length:           yearLength,
+	return KYear{
+		Doubleyear:       doubleyear,
+		DoubleyearDigits: utils.GetYearDigits(doubleyear),
+		Direction:        dir,
+		NormalYearStart:  yearStart,
+		Length:           yearLength,
 	}
 }
 
-// isDragonYear reports whether the doubleyear of which kyear is part contains
+// IsDragonYear reports whether the doubleyear of which kyear is part contains
 // dragons.
-func isDragonYear(kyear kYear) bool {
-	printDebug("Je to krok draka?")
-	dragonDigit := kyear.doubleyearDigits[len(kyear.doubleyearDigits)-1]
+func IsDragonYear(kyear KYear) bool {
+	utils.PrintDebug("Je to krok draka?")
+	dragonDigit := kyear.DoubleyearDigits[len(kyear.DoubleyearDigits)-1]
 	var (
 		dragonNum_3 = 3
 		dragonNum_5 = 5
 		dragonNum_7 = 7
 	)
 
-	if kyear.direction == OUT {
+	if kyear.Direction == OUT {
 		dragonNum_5 = dragonDigit
 	} else {
 		dragonNum_7 = dragonDigit
 	}
 
-	printDebug("Dračí čísla jsou: %d %d %d", dragonNum_3, dragonNum_5, dragonNum_7)
+	utils.PrintDebug("Dračí čísla jsou: %d %d %d", dragonNum_3, dragonNum_5, dragonNum_7)
 
-	dy := kyear.doubleyear
+	dy := kyear.Doubleyear
 	divisibleBy := 0
 
 	doForHolyNumber := func(num int) {
@@ -179,9 +172,9 @@ func isDragonYear(kyear kYear) bool {
 	return divisibleBy == 2
 }
 
-type kDate struct {
-	doubleYear doubleYear
-	dir        dirType
+type KDate struct {
+	doubleYear DoubleYear
+	dir        DirType
 	// 1 to 7 plus a dummy 8th for the dragon days.
 	sun int
 	// 0 for the 0 day of the sun, 1 to 17 for the remaining vyks. If sun == 8,
@@ -203,7 +196,7 @@ const (
 	KDAY_VYKOFF kDay = 6
 )
 
-func (d kDay) toString() string {
+func (d kDay) ToString() string {
 	switch d {
 	case 0:
 		return "nultý den"
@@ -227,7 +220,7 @@ func (d kDay) toString() string {
 
 type kVyk int
 
-func (vyk kVyk) toOrderedNumber() string {
+func (vyk kVyk) ToOrderedNumber() string {
 	switch vyk {
 	case 1:
 		return "prvního"
@@ -287,29 +280,29 @@ var Planets = []Planet{
 	"Merkuru (ohně)",
 }
 
-func (kd *kDate) toString() string {
-	kYear := kd.doubleYear.outKyear
+func (kd *KDate) ToString() string {
+	kYear := kd.doubleYear.OutKyear
 	if kd.dir == IN {
-		kYear = kd.doubleYear.inKyear
+		kYear = kd.doubleYear.InKyear
 	}
 
 	if kd.sun > NUM_SUNS {
-		dragonDays := kd.doubleYear.length - NUM_SUNS*SUN_LENGTH
+		dragonDays := kd.doubleYear.Length - NUM_SUNS*SUN_LENGTH
 		if dragonDays < 7 {
-			handleError(fmt.Errorf("Invalidní počet dní planet: %d", dragonDays))
+			utils.HandleError(fmt.Errorf("Invalidní počet dní planet: %d", dragonDays))
 		}
 
 		startPlanetIndex := 5 - (dragonDays - 7)
-		printDEBUG("Starting index for planets is %d for planet day %d of %d (out of %d)",
+		utils.PrintDEBUG("Starting index for planets is %d for planet day %d of %d (out of %d)",
 			startPlanetIndex,
 			kd.day,
 			dragonDays,
-			kd.doubleYear.length)
+			kd.doubleYear.Length)
 
 		planet := Planets[startPlanetIndex+int(kd.day)-1]
 		return fmt.Sprintf("krok %d %c, %-34s",
-			kYear.doubleyear,
-			kYear.direction.toChar(),
+			kYear.Doubleyear,
+			kYear.Direction.ToChar(),
 			fmt.Sprintf("den %s", string(planet)),
 		)
 	}
@@ -317,18 +310,18 @@ func (kd *kDate) toString() string {
 	if kd.vyk == 0 {
 		// Zero day
 		return fmt.Sprintf("krok %d %c, %d. slunce, %-23s",
-			kYear.doubleyear,
-			kYear.direction.toChar(),
+			kYear.Doubleyear,
+			kYear.Direction.ToChar(),
 			kd.sun,
 			"nultý den",
 		)
 	}
 
 	return fmt.Sprintf("krok %d %c, %d. slunce, %-23s",
-		kYear.doubleyear,
-		kYear.direction.toChar(),
+		kYear.Doubleyear,
+		kYear.Direction.ToChar(),
 		kd.sun,
-		fmt.Sprintf("%s %s výku", kd.day.toString(), kd.vyk.toOrderedNumber()),
+		fmt.Sprintf("%s %s výku", kd.day.ToString(), kd.vyk.ToOrderedNumber()),
 	)
 }
 
@@ -338,18 +331,18 @@ const SUN_LENGTH = 103
 const VYK_LENGTH = 6
 const NUM_SUNS = 7
 
-// timeToKlvanisticDate transforms a specific time into a klvanistic date.
-func timeToKlvanisticDate(date time.Time, doubleYear doubleYear) kDate {
-	midPoint := doubleYear.inKyear.normalYearStart
+// TimeToKlvanisticDate transforms a specific time into a klvanistic date.
+func TimeToKlvanisticDate(date time.Time, doubleYear DoubleYear) KDate {
+	midPoint := doubleYear.InKyear.NormalYearStart
 	// Here we do +1 because the distance between 21st December and the same day
 	// should be taken as 1. That way were actually counting the index of the
 	// day from 1.
-	daysFromStart := int(date.Sub(doubleYear.outKyear.normalYearStart).Hours()/24) + 1
+	daysFromStart := int(date.Sub(doubleYear.OutKyear.NormalYearStart).Hours()/24) + 1
 
-	printDEBUG("Hledám datum %s ve dvojroku %d, který má %d dní. Datum je %d dní od začátku.",
+	utils.PrintDEBUG("Hledám datum %s ve dvojroku %d, který má %d dní. Datum je %d dní od začátku.",
 		date.Format("2.1. 2006"),
-		doubleYear.inKyear.doubleyear,
-		doubleYear.length,
+		doubleYear.InKyear.Doubleyear,
+		doubleYear.Length,
 		daysFromStart)
 
 	var suns, daysInSun, vyks, daysInVyk int
@@ -400,25 +393,25 @@ func timeToKlvanisticDate(date time.Time, doubleYear doubleYear) kDate {
 		}
 	}
 
-	printDEBUG("Sluncí: %d, dní ve slunci: %d, výků: %d, dní ve výku: %d", suns, daysInSun, vyks, daysInVyk)
+	utils.PrintDEBUG("Sluncí: %d, dní ve slunci: %d, výků: %d, dní ve výku: %d", suns, daysInSun, vyks, daysInVyk)
 
 	if suns == NUM_SUNS+1 {
 		// It's the end of the doubleyear. This isn't a real sun, it's the
 		// dragon days.
 
-		printDEBUG("Datum je den draka")
+		utils.PrintDEBUG("Datum je den draka")
 		vyks = 0              // No vyks during dragon days.
 		daysInVyk = daysInSun // Ignore the zero day during dragon days.
 	}
 
-	var dir dirType
+	var dir DirType
 	if date.Before(midPoint) {
 		dir = OUT
 	} else {
 		dir = IN
 	}
 
-	return kDate{
+	return KDate{
 		doubleYear: doubleYear,
 		dir:        dir,
 		sun:        suns,
