@@ -206,7 +206,8 @@ func getCosins(b, c int) []float64 {
 
 // getOrderedSteps composes a list of ordered floats where each float
 // corresponds to a length of Lysak's jump. Sins and cosins must both be of
-// length NUM_CREATURES and be ordered. The result has length NUM_CREATURES - 1.
+// length NUM_CREATURES and be ordered. The result has length NUM_CREATURES - 1
+// (where the 1 is reserved for Chimera).
 func getOrderedSteps(sins, cosins []float64) []float64 {
 	printDebug("Počítám déklů Lysákových skoků")
 	results := []float64{}
@@ -402,4 +403,6 @@ func main() {
 	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
 	// TODO check documentation. It's outdated in places
 	// TODO English in the Czech text
+	// TODO Add a --nechapu option which explains how our calendar works.
+	// TODO Change from the document: The Pluto planet may repeat during Batman Days, because there could be up to 12 of the Days, not 9.
 }
