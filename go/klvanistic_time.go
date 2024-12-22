@@ -270,7 +270,12 @@ func (vyk kVyk) toOrderedNumber() string {
 
 type Planet string
 
+// There are multiple Plutos because it's the planet that can be assigned to
+// several days, depending on how many days there are in the doubleyear.
 var Planets = []Planet{
+	"Pluta (chaosu)",
+	"Pluta (chaosu)",
+	"Pluta (chaosu)",
 	"Pluta (chaosu)",
 	"Neptunu (chaosu)",
 	"Uranu (vzduchu)",
@@ -290,18 +295,11 @@ func (kd *kDate) toString() string {
 
 	if kd.sun > NUM_SUNS {
 		dragonDays := kd.doubleYear.length - NUM_SUNS*SUN_LENGTH
-		var startPlanetIndex int
-		switch dragonDays {
-		case 7:
-			startPlanetIndex = 2
-		case 8:
-			startPlanetIndex = 1
-		case 9:
-			startPlanetIndex = 0
-		default:
+		if dragonDays < 7 {
 			handleError(fmt.Errorf("Invalidní počet dní planet: %d", dragonDays))
 		}
 
+		startPlanetIndex := 5 - (dragonDays - 7)
 		printDEBUG("Starting index for planets is %d for planet day %d of %d (out of %d)",
 			startPlanetIndex,
 			kd.day,

@@ -399,7 +399,6 @@ func main() {
 	if !yearCached {
 		writeYearToFile(doubleYear)
 	}
-	// TODO Eror 'Invalidní počet dní planet: 11' na řádku 296 (input days were 21,22,21)
 	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
 	// TODO check documentation. It's outdated in places
 	// TODO English in the Czech text
