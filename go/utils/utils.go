@@ -25,7 +25,7 @@ var Debug = false
 var DebugDebug = false
 
 func PrintDebug(msg string, args ...interface{}) {
-	if !Debug {
+	if !Debug && !DebugDebug {
 		return
 	}
 

@@ -1,9 +1,9 @@
 // -*- eval: (hs-minor-mode 1); -*-
-package main
+package utils
 
 type Creature struct {
-	name CreatureName
-	days int
+	Name CreatureName
+	Days int
 }
 
 type CreatureName string
@@ -48,14 +48,14 @@ var Creatures []CreatureName = []CreatureName{
 type Dragon Creature
 
 var Dragons = []Dragon{
-	{days: 1, name: "Drak ohně"},
-	{days: 1, name: "Drak země"},
-	{days: 1, name: "Drak života"},
-	{days: 1, name: "Drak vody"},
-	{days: 1, name: "Drak dřeva"},
-	{days: 1, name: "Drak smrti"},
-	{days: 1, name: "Drak vzduchu"},
-	{days: 1, name: "Drak chaosu"},
+	{Days: 1, Name: "Drak ohně"},
+	{Days: 1, Name: "Drak země"},
+	{Days: 1, Name: "Drak života"},
+	{Days: 1, Name: "Drak vody"},
+	{Days: 1, Name: "Drak dřeva"},
+	{Days: 1, Name: "Drak smrti"},
+	{Days: 1, Name: "Drak vzduchu"},
+	{Days: 1, Name: "Drak chaosu"},
 }
 
 var DragonsAfterCreatureIndex = []int{0, 2, 5, 8, 14, 18, 23, 29}

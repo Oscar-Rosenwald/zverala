@@ -8,7 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"zverala/command_line"
 	ktime "zverala/klvanistic_time"
+	"zverala/spiral"
+	"zverala/utils"
 
 	"github.com/stretchr/testify/require"
 )
@@ -68,7 +71,7 @@ func TestComposeKyear(t *testing.T) {
 
 func TestGetOrderedSteps(t *testing.T) {
 	var sins, cosins []float64
-	for i := 0; i < NUM_CREATURES; i++ {
+	for i := 0; i < utils.NUM_CREATURES; i++ {
 		sins = append(sins, rand.Float64())
 		cosins = append(cosins, rand.Float64())
 	}
@@ -76,7 +79,7 @@ func TestGetOrderedSteps(t *testing.T) {
 	sort.Slice(sins, func(i, j int) bool { return sins[i] < sins[j] })
 	sort.Slice(cosins, func(i, j int) bool { return cosins[i] < cosins[j] })
 
-	results1 := getOrderedSteps(sins, cosins)
+	results1 := spiral.GetOrderedSteps(sins, cosins)
 
 	for i := range sins {
 		sins[i] += 10
@@ -85,7 +88,7 @@ func TestGetOrderedSteps(t *testing.T) {
 		cosins[i] += 10
 	}
 
-	results2 := getOrderedSteps(sins, cosins)
+	results2 := spiral.GetOrderedSteps(sins, cosins)
 
 	for i, res := range results1 {
 		if i == 0 {
@@ -99,50 +102,50 @@ func TestGetOrderedSteps(t *testing.T) {
 
 func TestOrderedCreatures(t *testing.T) {
 	var days []int
-	for i := 0; i < NUM_CREATURES-1; i++ {
+	for i := 0; i < utils.NUM_CREATURES-1; i++ {
 		// Reserve 0 days for chimera
 		days = append(days, i+1)
 	}
 
 	t.Run("ktime.OUT", func(t *testing.T) {
-		creatures := getCreaturesInOrder(ktime.OUT, 0, days)
+		creatures := spiral.GetCreaturesInOrder(ktime.OUT, 0, days)
 		for i, creature := range creatures {
-			expectedName := Creatures[i]
-			require.Equal(t, expectedName, creature.name)
-			require.Equal(t, i, creature.days)
+			expectedName := utils.Creatures[i]
+			require.Equal(t, expectedName, creature.Name)
+			require.Equal(t, i, creature.Days)
 		}
 
 		t.Run("dragon_days", func(t *testing.T) {
-			creatures = addDragonDays(true, ktime.OUT, creatures)
-			for i, creatureIndex := range DragonsAfterCreatureIndex {
+			creatures = spiral.AddDragonDays(true, ktime.OUT, creatures)
+			for i, creatureIndex := range utils.DragonsAfterCreatureIndex {
 				creature := creatures[creatureIndex+1+i]
-				require.Equal(t, Dragons[i].name, creature.name)
-				require.Equal(t, 1, Dragons[i].days)
+				require.Equal(t, utils.Dragons[i].Name, creature.Name)
+				require.Equal(t, 1, utils.Dragons[i].Days)
 			}
 		})
 
 	})
 
 	t.Run("ktime.IN", func(t *testing.T) {
-		creatures := getCreaturesInOrder(ktime.IN, 0, days)
+		creatures := spiral.GetCreaturesInOrder(ktime.IN, 0, days)
 		for i, creature := range creatures {
-			expectName := Creatures[NUM_CREATURES-1-i]
-			require.Equal(t, expectName, creature.name)
+			expectName := utils.Creatures[utils.NUM_CREATURES-1-i]
+			require.Equal(t, expectName, creature.Name)
 			expectDays := i + 1
-			if i == NUM_CREATURES-1 {
+			if i == utils.NUM_CREATURES-1 {
 				expectDays = 0 // Chimera has 0 days
 			}
-			require.Equal(t, expectDays, creature.days)
+			require.Equal(t, expectDays, creature.Days)
 		}
 
 		t.Run("dragon_days", func(t *testing.T) {
-			creatures = addDragonDays(true, ktime.IN, creatures)
-			for i, creatureIndex := range DragonsAfterCreatureIndex {
+			creatures = spiral.AddDragonDays(true, ktime.IN, creatures)
+			for i, creatureIndex := range utils.DragonsAfterCreatureIndex {
 				// I appreciate this is quite difficult to reason about.
 				// Basically we're doing this:
 				//
 				//  - Get the total Length of the new creatures array ->
-				//    NUM_CREATURES + NUM_DRAGONS
+				//    utils.NUM_CREATURES + NUM_DRAGONS
 				//
 				//  - For each index in the DragonsAfterCreatureIndex, count
 				//    backwards in the creatures array. Arrays' indeces only
@@ -153,9 +156,9 @@ func TestOrderedCreatures(t *testing.T) {
 				//
 				//  - Each index must take into account the dragons previously
 				//    considered -> -i
-				creature := creatures[NUM_CREATURES+NUM_DRAGONS-i-creatureIndex-2]
-				require.Equal(t, Dragons[i].name, creature.name)
-				require.Equal(t, 1, Dragons[i].days)
+				creature := creatures[utils.NUM_CREATURES+utils.NUM_DRAGONS-i-creatureIndex-2]
+				require.Equal(t, utils.Dragons[i].Name, creature.Name)
+				require.Equal(t, 1, utils.Dragons[i].Days)
 			}
 		})
 	})
@@ -197,7 +200,7 @@ func TestFileManipulation(t *testing.T) {
 
 	tmpFile, err := os.CreateTemp("/tmp/", "zverala_test")
 	require.NoError(t, err)
-	file = tmpFile.Name()
+	command_line.File = tmpFile.Name()
 	defer os.RemoveAll("/tmp/" + tmpFile.Name())
 
 	dYear := ktime.DoubleYear{
@@ -208,7 +211,7 @@ func TestFileManipulation(t *testing.T) {
 	writeYearToFile(dYear)
 
 	t.Run(fmt.Sprintf("get_cached_year_%d", year), func(t *testing.T) {
-		sol1, sol2, sol3, found := cachedYear(year)
+		sol1, sol2, sol3, found := command_line.CachedYear(year)
 
 		if !found {
 			var content []byte
@@ -238,7 +241,7 @@ func TestCalculateABC(t *testing.T) {
 			{12, 4},
 		} {
 			t.Run(fmt.Sprintf("input_is_%d", item.input), func(t *testing.T) {
-				out := calculate_a(item.input)
+				out := spiral.Calculate_a(item.input)
 				require.Equal(t, item.output, out)
 			})
 		}
@@ -262,9 +265,9 @@ func TestCalculateABC(t *testing.T) {
 			},
 		} {
 			t.Run(fmt.Sprintf("input_year_is_%v", item.digits), func(t *testing.T) {
-				out := calculate_b(item.digits, true)
+				out := spiral.Calculate_b(item.digits, true)
 				require.Equal(t, item.outwardOut, out)
-				out = calculate_b(item.digits, false)
+				out = spiral.Calculate_b(item.digits, false)
 				require.Equal(t, item.inwardOut, out)
 			})
 		}
@@ -283,7 +286,7 @@ func TestCalculateABC(t *testing.T) {
 			},
 		} {
 			t.Run(fmt.Sprintf("year_%d", item.DoubleYear), func(t *testing.T) {
-				out := calculate_c(item.DoubleYear, item.digits)
+				out := spiral.Calculate_c(item.DoubleYear, item.digits)
 				require.Equal(t, item.output, out)
 			})
 		}

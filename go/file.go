@@ -2,28 +2,21 @@ package main
 
 import (
 	"bufio"
-	"errors"
-	"io/fs"
 	"os"
-	"strconv"
-	"strings"
-	"time"
+	"zverala/command_line"
 	"zverala/utils"
 )
 
-// TODO Change for the appropriate file. Make it a relative path, possibly configurable by the user.
-var file = "/Users/cyrilsaroch/Documents/Martinismus/Zverala/Zverala2.txt"
-
 func writeYearToFile(year doubleYear) {
-	if !saveToFile {
+	if !command_line.SaveToFile {
 		return
 	}
 
 	// Even if the file didn't exist when we called the app, cachedYear created
 	// it, so it's safe now to open it without checking.
-	utils.PrintDebug("Otevírám soubor %s", file)
+	utils.PrintDebug("Otevírám soubor %s", command_line.File)
 
-	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0)
+	f, err := os.OpenFile(command_line.File, os.O_APPEND|os.O_WRONLY, 0)
 	utils.HandleError(err)
 	defer f.Close()
 
@@ -33,65 +26,4 @@ func writeYearToFile(year doubleYear) {
 	err = file.Flush()
 	utils.HandleError(err)
 	utils.PrintDebug("Dvojrok %s uložen", year.ToCache())
-}
-
-func cachedYear(year int) (sol1, sol2, sol3 time.Time, found bool) {
-	if !saveToFile {
-		return time.Time{}, time.Time{}, time.Time{}, false
-	}
-
-	var f *os.File
-
-	_, err := os.Stat(file)
-	if err == nil {
-		utils.PrintDebug("Otevírám soubor %s", file)
-		f, err = os.Open(file)
-	} else if errors.Is(err, fs.ErrNotExist) {
-		utils.PrintDebug("Vytvářím soubor %s", file)
-		f, err = os.Create(file)
-	}
-
-	utils.HandleError(err)
-	defer f.Close()
-
-	file := bufio.NewScanner(f)
-	for {
-		noEnd := file.Scan()
-		utils.HandleError(file.Err())
-		if !noEnd {
-			break
-		}
-		line := file.Text()
-		if line == "" {
-			break
-		}
-
-		utils.PrintDEBUG("Porovnávám dvojrok %d s řádkem %s", year, line)
-		parts := strings.Split(line, ":")
-		if len(parts) != 5 {
-			utils.PrintInfo("EROR: SOUBOR %d NEMÁ SPRÁVNÝ FORMÁT", f.Name())
-			break
-		}
-
-		firstYear, err := strconv.Atoi(parts[1])
-		utils.HandleError(err)
-		midDay, err := strconv.Atoi(parts[3])
-		utils.HandleError(err)
-		midSol := time.Date(firstYear+1, 12, midDay, 0, 0, 0, 0, time.Local)
-
-		utils.PrintDEBUG("První rok: %d, prostřední slunovrat: %s", firstYear, midSol.String())
-
-		if year == firstYear || year == firstYear+1 {
-			firstDay, err := strconv.Atoi(parts[2])
-			utils.HandleError(err)
-			solStart := time.Date(firstYear, 12, firstDay, 0, 0, 0, 0, time.Local)
-
-			lastDay, err := strconv.Atoi(parts[4])
-			utils.HandleError(err)
-			solEnd := time.Date(firstYear+2, 12, lastDay, 0, 0, 0, 0, time.Local)
-			return solStart, midSol, solEnd, true
-		}
-	}
-
-	return time.Time{}, time.Time{}, time.Time{}, false
 }
