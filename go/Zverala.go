@@ -1,4 +1,4 @@
-// -*- eval: (hs-minor-mode 1); -*-
+// -*- eval: (hs-minor-mode 1); eval: (lsp); -*-
 package main
 
 import (
@@ -38,8 +38,6 @@ func main() {
 
 	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
 
-	// TODO check documentation. It's outdated in places
-	// TODO English in the Czech text
 	// TODO Add a --nechapu option which explains how our calendar works.
 	// TODO Change from the document: The Pluto planet may repeat during Batman Days, because there could be up to 12 of the Days, not 9.
 }

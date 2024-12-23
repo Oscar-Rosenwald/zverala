@@ -86,14 +86,6 @@ func (nwi *NumWithIndex) Smaller(other *NumWithIndex) bool {
 	return nwi.Num != other.Num && nwi.Num < other.Num
 }
 
-func unPointer(digits []*NumWithIndex) []NumWithIndex {
-	var ret []NumWithIndex
-	for _, d := range digits {
-		ret = append(ret, *d)
-	}
-	return ret
-}
-
 func SwapNumbers(one, two *NumWithIndex) {
 	helpNum := one.Num
 	helpIndex := one.Index

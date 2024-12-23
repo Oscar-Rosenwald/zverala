@@ -284,7 +284,8 @@ func stepsToDays(steps []float64, yearLength, totalSteps float64) []int {
 
 // GetCreaturesInOrder gives a list of creatures and their corresponding day
 // ranges during the year. The order of creatures is given by the direction of
-// the kyear. utils.Dragons are ignored.
+// the kyear. utils.Dragons are ignored, and should be added using
+// AddDragonDays.
 func GetCreaturesInOrder(direction ktime.DirType, chimeraDays int, days []int) []utils.Creature {
 	var creatures []utils.Creature
 
@@ -313,7 +314,7 @@ func GetCreaturesInOrder(direction ktime.DirType, chimeraDays int, days []int) [
 	return creatures
 }
 
-// AddDragonDays takes the output of getCreaturesInOrder and adds dragons to it
+// AddDragonDays takes the output of GetCreaturesInOrder and adds dragons to it
 // if dragonYear is true.
 func AddDragonDays(dragonYear bool, direction ktime.DirType, creatures []utils.Creature) []utils.Creature {
 	if !dragonYear {
@@ -355,8 +356,8 @@ func AddDragonDays(dragonYear bool, direction ktime.DirType, creatures []utils.C
 }
 
 // ComputeZverala returns a list of Creatures in the order they appear in kyear
-// along with how long they are active. The daysPerCreature return value is for
-// convenience of the caller; they needn't be in order.
+// along with how long they are active for. The daysPerCreature return value is
+// for convenience of the caller, and needn't be in order.
 func ComputeZverala(kyear *kYear, doubleyear *doubleYear) (creaturesInOrder []Creature, daysPerCreature []int) {
 	dragonYear := ktime.IsDragonYear(*kyear)
 	kyear.DragonYear = dragonYear

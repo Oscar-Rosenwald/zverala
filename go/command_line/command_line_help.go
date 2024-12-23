@@ -59,7 +59,7 @@ func ParseArgs() {
 }
 
 // requestYearInfo prompts for and reads from stdin information about the kyear
-// in question.
+// in question. It is to be used to print the whole kyear.
 func RequestYearInfo() (doubleYear, kYear, bool) {
 	stdinReader := bufio.NewReader(os.Stdin)
 
@@ -139,12 +139,15 @@ func RequestYearInfo() (doubleYear, kYear, bool) {
 	}
 
 	utils.PrintDebug("Spracovávám krok %s", kYear.ToReadableString())
-	utils.HandleError(fmt.Errorf("Cannot compute doubleyear with direction %c", kYear.Direction.ToChar()))
+	utils.HandleError(fmt.Errorf("Nemohu zpracovat dvojrok ve směru %c", kYear.Direction.ToChar()))
 	return doubleYear{}, kYear, found
 }
 
 // TODO tests
-func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time, foundCached bool) {
+//
+// RequestDate prompts the user for info about a date in question, computing the
+// doublyear surrounding it. The date inputed is returned in targetDate.
+func RequestDate() (doubleyear doubleYear, kyear kYear, targetDate time.Time, foundCached bool) {
 	stdinReader := bufio.NewReader(os.Stdin)
 
 	readOption := func(prompt string) int {
@@ -245,7 +248,7 @@ func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time, f
 	}
 
 	utils.PrintDebug("Spracovávám krok %s", currnetKyear.ToReadableString())
-	utils.HandleError(fmt.Errorf("Cannot compute doubleyear with direction %c", currnetKyear.Direction.ToChar()))
+	utils.HandleError(fmt.Errorf("Nemohu zpracovat dvojrok ve směru %c", currnetKyear.Direction.ToChar()))
 	return doubleYear{}, kYear{}, time.Time{}, false
 }
 
@@ -312,6 +315,17 @@ func printHelp() {
 	utils.PrintInfo("--debug-debug ... Tisknout extra EXTRA informace")
 }
 
+// CachedYear finds year in File, taking into account that the file caches whole
+// doubleyears. It returns the three solstices of the doubleyear (start, middle,
+// and end) along with a flag that says whether a match was found.
+//
+// CachedYear is targetted at the zverala app, which only cares about whole
+// years. If you want to use it in the calendar app, a closer examination of the
+// dates must be undergone. To enable this, set checkSurroundingYears to true.
+//
+// The first startIndex matched lines are ignored. This way you may loop over
+// this function multiple times, incrementing startIndex, and get different
+// results every time.
 func CachedYear(year int, checkSurroundingYears bool, startIndex int) (sol1, sol2, sol3 time.Time, found bool) {
 	if !SaveToFile {
 		return time.Time{}, time.Time{}, time.Time{}, false

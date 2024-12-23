@@ -25,7 +25,7 @@ func (typ DirType) ToChar() Char {
 	}
 	// Pass an error to hanldeError so we guarantee that the program is
 	// terminated here.
-	utils.HandleError(fmt.Errorf("Invalid K. year direction: '%s'", typ))
+	utils.HandleError(fmt.Errorf("Invalidní směr kroku: '%s'", typ))
 	return ' '
 }
 
@@ -62,6 +62,7 @@ type DoubleYear struct {
 	Length   int
 }
 
+// ToCache returns dy in the cache form to be written into the cache file.
 func (dy *DoubleYear) ToCache() string {
 	return fmt.Sprintf("%d:%d:%d:%d:%d\n",
 		dy.OutKyear.Doubleyear,
@@ -78,6 +79,7 @@ func (dy *DoubleYear) ToString() string {
 	return fmt.Sprintf("Dvojrok %d.%d. %d - %d.%d. %d (%d dní)", start.Day(), start.Month(), start.Year(), end.Day(), end.Month(), end.Year(), dy.Length)
 }
 
+// GetYearNumber turns digits into a single int.
 func GetYearNumber(digits []*utils.NumWithIndex) int {
 	var ret = 0
 	var reverse []utils.NumWithIndex
@@ -93,6 +95,7 @@ func GetYearNumber(digits []*utils.NumWithIndex) int {
 	return ret
 }
 
+// GetYearNumberFromSlice turns digits into a single int.
 func GetYearNumberFromSlice(digits []int) int {
 	var ret = 0
 	var reverse []int
@@ -172,6 +175,7 @@ func IsDragonYear(kyear KYear) bool {
 	return divisibleBy == 2
 }
 
+// KDate is a representation of a single day in the Klvanistic calendar.
 type KDate struct {
 	doubleYear DoubleYear
 	dir        DirType
@@ -293,7 +297,7 @@ func (kd *KDate) ToString() string {
 		}
 
 		startPlanetIndex := 5 - (dragonDays - 7)
-		utils.PrintDEBUG("Starting index for planets is %d for planet day %d of %d (out of %d)",
+		utils.PrintDEBUG("Počáteční index planet je %d pro %d. den planet z %d (z totálního počtu dní %d)",
 			startPlanetIndex,
 			kd.day,
 			dragonDays,
@@ -331,7 +335,7 @@ const SUN_LENGTH = 103
 const VYK_LENGTH = 6
 const NUM_SUNS = 7
 
-// TimeToKlvanisticDate transforms a specific time into a klvanistic date.
+// TimeToKlvanisticDate transforms a specific time into a Klvanistic date.
 func TimeToKlvanisticDate(date time.Time, doubleYear DoubleYear) KDate {
 	midPoint := doubleYear.InKyear.NormalYearStart
 	// Here we do +1 because the distance between 21st December and the same day

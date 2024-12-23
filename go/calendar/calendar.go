@@ -21,6 +21,7 @@ func main() {
 	creaturesInOrder, _ := spiral.ComputeZverala(&kyear, &doubleYear)
 	utils.PrintDebug("Datum %s je %d dní od začátku kroku %s", targetDate.String(), daysFromKyearStart, kyear.ToString())
 
+	// Now we find which creature the target date belongs to.
 	var creatureAtDate utils.Creature
 	dayRoller := 0
 	for _, creature := range creaturesInOrder {

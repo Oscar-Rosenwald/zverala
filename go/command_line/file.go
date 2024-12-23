@@ -6,6 +6,7 @@ import (
 	"zverala/utils"
 )
 
+// WriteYearToFile stores year in its cache form in File.
 func WriteYearToFile(year doubleYear) {
 	if !SaveToFile {
 		return

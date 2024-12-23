@@ -208,7 +208,7 @@ func TestFileManipulation(t *testing.T) {
 		InKyear:  ktime.ComputeKyear(sol2In, sol3In),
 		EndTime:  sol3In,
 	}
-	writeYearToFile(dYear)
+	command_line.WriteYearToFile(dYear)
 
 	t.Run(fmt.Sprintf("get_cached_year_%d", year), func(t *testing.T) {
 		sol1, sol2, sol3, found := command_line.CachedYear(year, false, 0)
