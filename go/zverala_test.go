@@ -211,7 +211,7 @@ func TestFileManipulation(t *testing.T) {
 	writeYearToFile(dYear)
 
 	t.Run(fmt.Sprintf("get_cached_year_%d", year), func(t *testing.T) {
-		sol1, sol2, sol3, found := command_line.CachedYear(year)
+		sol1, sol2, sol3, found := command_line.CachedYear(year, false, 0)
 
 		if !found {
 			var content []byte

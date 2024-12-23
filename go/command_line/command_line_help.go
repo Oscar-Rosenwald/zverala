@@ -17,10 +17,11 @@ import (
 type doubleYear = ktime.DoubleYear
 type kYear = ktime.KYear
 
-var SaveToFile bool = true
-
-// TODO Change for the appropriate File. Make it a relative path, possibly configurable by the user.
-var File = "/Users/cyrilsaroch/Documents/Martinismus/Zverala/Zverala2.txt"
+var (
+	SaveToFile bool = true
+	// TODO Change for the appropriate File. Make it a relative path, possibly configurable by the user.
+	File = "/Users/cyrilsaroch/Documents/Martinismus/Zverala/Zverala2.txt"
+)
 
 // Handles command line argument
 func ParseArgs() {
@@ -88,7 +89,7 @@ func RequestYearInfo() (doubleYear, kYear, bool) {
 
 	year := readOption("Rok prvního slunovratu: ")
 
-	sol1, sol2, sol3, found := CachedYear(year)
+	sol1, sol2, sol3, found := CachedYear(year, false, 0)
 	if found {
 		var kyear kYear
 		outKyear := ktime.ComputeKyear(sol1, sol2)
@@ -143,7 +144,7 @@ func RequestYearInfo() (doubleYear, kYear, bool) {
 }
 
 // TODO tests
-func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time) {
+func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time, foundCached bool) {
 	stdinReader := bufio.NewReader(os.Stdin)
 
 	readOption := func(prompt string) int {
@@ -168,23 +169,32 @@ func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time) {
 	// after the cached solstice, which is always at midnight, and after the
 	// reference date's timestamp, which is 11:00 UTC.
 	targetDate = time.Date(year, time.Month(month), day, 12, 0, 0, 0, time.UTC)
+	startIndex := 0
 
-	sol1, sol2, sol3, found := CachedYear(year)
-	if found && sol1.Before(targetDate) && sol3.After(targetDate) {
-		outKyear := ktime.ComputeKyear(sol1, sol2)
-		inKyear := ktime.ComputeKyear(sol2, sol3)
-
-		currentKyear := outKyear
-		if targetDate.After(sol2) {
-			currentKyear = inKyear
+	for {
+		sol1, sol2, sol3, found := CachedYear(year, true, startIndex)
+		if !found {
+			break
 		}
 
-		return doubleYear{
-			OutKyear: outKyear,
-			InKyear:  inKyear,
-			EndTime:  sol3,
-			Length:   outKyear.Length + inKyear.Length,
-		}, currentKyear, targetDate
+		if sol1.Before(targetDate) && sol3.After(targetDate) {
+			outKyear := ktime.ComputeKyear(sol1, sol2)
+			inKyear := ktime.ComputeKyear(sol2, sol3)
+
+			currentKyear := outKyear
+			if targetDate.After(sol2) {
+				currentKyear = inKyear
+			}
+
+			return doubleYear{
+				OutKyear: outKyear,
+				InKyear:  inKyear,
+				EndTime:  sol3,
+				Length:   outKyear.Length + inKyear.Length,
+			}, currentKyear, targetDate, true
+		}
+
+		startIndex++
 	}
 
 	// We need to construct the doubleyear. First we need to find out if we're
@@ -220,7 +230,7 @@ func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time) {
 			InKyear:  inKyear,
 			EndTime:  endSol,
 			Length:   currnetKyear.Length + inKyear.Length,
-		}, currnetKyear, targetDate
+		}, currnetKyear, targetDate, false
 	case ktime.IN:
 		utils.PrintInfo("Krok v zadaném rozmezí je soustředný. Nyní potřebuji informace o předchozím kroku.")
 		startSol := readSolstice(year - 2)
@@ -231,12 +241,12 @@ func RequestDate() (doubleyear doubleYear, kyeaer kYear, targetDate time.Time) {
 			InKyear:  currnetKyear,
 			EndTime:  solSameYear,
 			Length:   outKyear.Length + currnetKyear.Length,
-		}, currnetKyear, targetDate
+		}, currnetKyear, targetDate, false
 	}
 
 	utils.PrintDebug("Spracovávám krok %s", currnetKyear.ToReadableString())
 	utils.HandleError(fmt.Errorf("Cannot compute doubleyear with direction %c", currnetKyear.Direction.ToChar()))
-	return doubleYear{}, kYear{}, time.Time{}
+	return doubleYear{}, kYear{}, time.Time{}, false
 }
 
 func PrintCreatures(creatures []utils.Creature, doubleYear doubleYear, kYear kYear, padToColumn, maxDaysLength int) {
@@ -302,7 +312,7 @@ func printHelp() {
 	utils.PrintInfo("--debug-debug ... Tisknout extra EXTRA informace")
 }
 
-func CachedYear(year int) (sol1, sol2, sol3 time.Time, found bool) {
+func CachedYear(year int, checkSurroundingYears bool, startIndex int) (sol1, sol2, sol3 time.Time, found bool) {
 	if !SaveToFile {
 		return time.Time{}, time.Time{}, time.Time{}, false
 	}
@@ -333,6 +343,11 @@ func CachedYear(year int) (sol1, sol2, sol3 time.Time, found bool) {
 			break
 		}
 
+		if startIndex > 0 {
+			startIndex--
+			continue
+		}
+
 		utils.PrintDEBUG("Porovnávám dvojrok %d s řádkem %s", year, line)
 		parts := strings.Split(line, ":")
 		if len(parts) != 5 {
@@ -348,7 +363,7 @@ func CachedYear(year int) (sol1, sol2, sol3 time.Time, found bool) {
 
 		utils.PrintDEBUG("První rok: %d, prostřední slunovrat: %s", firstYear, midSol.String())
 
-		if year == firstYear || year == firstYear+1 {
+		if year == firstYear || year == firstYear+1 || (checkSurroundingYears && year == firstYear+2) {
 			firstDay, err := strconv.Atoi(parts[2])
 			utils.HandleError(err)
 			solStart := time.Date(firstYear, 12, firstDay, 0, 0, 0, 0, time.Local)

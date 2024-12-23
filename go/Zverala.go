@@ -33,12 +33,11 @@ func main() {
 	command_line.PrintCreatures(creaturesInOrder, doubleYear, kyear, padToColumn, maxDaysLength)
 
 	if !yearCached {
-		writeYearToFile(doubleYear)
+		command_line.WriteYearToFile(doubleYear)
 	}
 
 	// Good years to test dragons: 2048 (for OUTWARD) and 2049 (for INWARD).
 
-	// TODO turn klvanistic_time.go into a module and write a what_is_today package.
 	// TODO check documentation. It's outdated in places
 	// TODO English in the Czech text
 	// TODO Add a --nechapu option which explains how our calendar works.

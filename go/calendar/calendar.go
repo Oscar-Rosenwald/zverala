@@ -10,7 +10,7 @@ import (
 
 func main() {
 	command_line.ParseArgs()
-	doubleYear, kyear, targetDate := command_line.RequestDate()
+	doubleYear, kyear, targetDate, foundCached := command_line.RequestDate()
 	utils.PrintDebug("Zpracovávám datum %s v kroce %s dvojroku %s", targetDate.String(), kyear.ToReadableString(), doubleYear.ToString())
 
 	// In this case it's okay to ignore the fact that not all days are 24 hours,
@@ -38,16 +38,7 @@ func main() {
 
 	utils.PrintInfo("%s: %s", targetKDate.ToString(), creatureAtDate.Name)
 
-	// TODO If the date is in the third year of a doubleyear (as in January to
-	// December of the last year), then CachedYear doesn't consider it cached
-	// even though it is. This makes sense, because CachedYear only looks at the
-	// first two years, as the third solstice belongs into the next doubleyear,
-	// but in this case where we are supplying a precise date we do actually
-	// need it.
-
-	// TODO After CachedYear can differentiate between 1st January 2049 and 31st
-	// December 2049 as two different double years, we will want to cache any
-	// new years. As of writing this we cannot do that because 2049 is a year
-	// that according to CachedYear doesn't belong to the doubleyear starting
-	// with 2047, but it DOES belong there until December.
+	if !foundCached {
+		command_line.WriteYearToFile(doubleYear)
+	}
 }

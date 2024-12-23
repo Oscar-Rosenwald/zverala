@@ -1,22 +1,21 @@
-package main
+package command_line
 
 import (
 	"bufio"
 	"os"
-	"zverala/command_line"
 	"zverala/utils"
 )
 
-func writeYearToFile(year doubleYear) {
-	if !command_line.SaveToFile {
+func WriteYearToFile(year doubleYear) {
+	if !SaveToFile {
 		return
 	}
 
 	// Even if the file didn't exist when we called the app, cachedYear created
 	// it, so it's safe now to open it without checking.
-	utils.PrintDebug("Otevírám soubor %s", command_line.File)
+	utils.PrintDebug("Otevírám soubor %s abych zapsal dvojrok %s", File, year.ToString())
 
-	f, err := os.OpenFile(command_line.File, os.O_APPEND|os.O_WRONLY, 0)
+	f, err := os.OpenFile(File, os.O_APPEND|os.O_WRONLY, 0)
 	utils.HandleError(err)
 	defer f.Close()
 
