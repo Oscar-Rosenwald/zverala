@@ -19,8 +19,7 @@ type kYear = ktime.KYear
 
 var (
 	SaveToFile bool = true
-	// TODO Change for the appropriate File. Make it a relative path, possibly configurable by the user.
-	File = "/Users/cyrilsaroch/Documents/Martinismus/Zverala/Zverala2.txt"
+	File            = "../Zverala-cache.txt"
 )
 
 // Handles command line argument
